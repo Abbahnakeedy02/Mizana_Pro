@@ -1,0 +1,207 @@
+<style>
+        :root {
+            --brand-main: #132B77;
+            --brand-accent: #0A89A4;
+            --bg-body: #b3f9ff;
+            --calc-white: #ffffff;
+        }
+
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dark {
+            --bg-body: #0f172a;
+            --calc-white: #1e293b;
+        }
+
+        .dark aside {
+            background: #0a1120;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-card {
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-left-color: #0A89A4;
+        }
+
+        .sidebar-active {
+            background: rgba(10, 137, 164, 0.2);
+            color: #0A89A4 !important;
+            font-weight: bold;
+        }
+
+        aside {
+            background: #132B77;
+            color: white;
+        }
+
+        .bg-header {
+            background: #ffffff;
+        }
+
+        .dark .bg-header {
+            background: #111827;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .calculator {
+            width: 320px;
+            background-color: var(--brand-main);
+            padding: 20px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .screen {
+            width: 100%;
+            height: 50px;
+            background-color: #2c3e50;
+            border: none;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            color: #fff;
+            text-align: right;
+            padding: 10px 15px;
+            font-size: 28px;
+            font-weight: 600;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .buttons button {
+            height: 40px;
+            border-radius: 12px;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .number {
+            background-color: #34495e;
+        }
+
+        .operator {
+            background-color: var(--brand-accent);
+            color: white;
+        }
+
+        .operator:hover {
+            background-color: #0A89A4;
+            opacity: 0.9;
+        }
+
+        .function {
+            background-color: #95a5a6;
+            color: var(--brand-main);
+        }
+
+        .equals {
+            grid-column: span 2;
+            background-color: var(--brand-accent);
+        }
+
+        .calc-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .calculator.large {
+            width: 450px;
+            transform: scale(1.1);
+        }
+
+        .calc-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .close-btn:hover {
+            background: #e74c3c;
+        }
+
+        /* Masked text style */
+        .masked {
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        /* Sidebar link base */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.2s;
+        }
+
+        /* Hover effect */
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        /* Active link – uses brand accent */
+        .sidebar-link.active {
+            background: rgba(10, 137, 164, 0.2);
+            /* brand accent with opacity */
+            color: #0A89A4;
+            /* solid brand accent */
+            font-weight: bold;
+        }
+
+        /* Dark mode adjustments (if any) */
+        .dark .sidebar-link.active {
+            background: rgba(10, 137, 164, 0.3);
+            color: #0A89A4;
+        }
+    </style>

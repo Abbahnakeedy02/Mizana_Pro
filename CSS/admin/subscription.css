@@ -1,0 +1,156 @@
+/* ===== YOUR BRAND COLORS ===== */
+:root {
+    --brand-main: #0A89A4;
+    /* vibrant teal – primary accent */
+    --brand-dark: #132B77;
+    /* deep navy – header background */
+    --brand-mid: #005082;
+    /* dark blue – secondary */
+    --brand-bright: #16B2C1;
+    /* light teal – extra highlights */
+    --brand-bg: #E4F9FF;
+    /* light cyan – page background */
+    --white: #FFFFFF;
+    --gray-600: #475569;
+    --gray-800: #1E293B;
+    --shadow: 0 10px 25px rgba(10, 137, 164, 0.1);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--brand-bg);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.sub-container {
+    max-width: 400px;
+    width: 100%;
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    text-align: center;
+}
+
+.header {
+    background-color: var(--brand-dark);
+    padding: 30px 20px;
+    color: white;
+}
+
+.logo-small {
+    font-weight: bold;
+    font-size: 24px;
+    letter-spacing: 1px;
+}
+
+.logo-small span {
+    color: var(--brand-main);
+}
+
+.pricing-plans {
+    padding: 20px;
+}
+
+.plan-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.plan-card:hover {
+    border-color: var(--brand-main);
+    background-color: rgba(10, 137, 164, 0.04);
+}
+
+.plan-card.active {
+    border-color: var(--brand-main);
+    background-color: rgba(10, 137, 164, 0.08);
+}
+
+.plan-card.active::after {
+    content: '✓';
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: var(--brand-main);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.plan-title {
+    font-weight: bold;
+    display: block;
+    font-size: 18px;
+    color: var(--brand-dark);
+}
+
+.plan-price {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gray-800);
+}
+
+.savings {
+    color: var(--brand-bright);
+    font-size: 12px;
+    font-weight: bold;
+    display: block;
+    margin-top: 4px;
+}
+
+.benefits {
+    text-align: left;
+    padding: 0 30px;
+    font-size: 14px;
+    color: var(--gray-600);
+}
+
+.benefits ul {
+    list-style: none;
+    padding: 0;
+}
+
+.benefits li {
+    margin-bottom: 10px;
+}
+
+.benefits li::before {
+    content: "•";
+    color: var(--brand-main);
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.pay-btn {
+    background-color: var(--brand-dark);
+    color: white;
+    border: none;
+    width: 85%;
+    padding: 15px;
+    border-radius: 60px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 20px 0;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.pay-btn:hover {
+    background-color: var(--brand-main);
+}
+
+.footer-note {
+    font-size: 11px;
+    color: #94a3b8;
+    padding-bottom: 20px;
+}

@@ -1,0 +1,246 @@
+        /* Same brand variables as login */
+        :root {
+            --brand-main: #0A89A4;
+            --brand-dark: #132B77;
+            --brand-mid: #005082;
+            --brand-bright: #16B2C1;
+            --brand-bg: #E4F9FF;
+            --white: #FFFFFF;
+            --gray-50: #F8FAFC;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-600: #475569;
+            --gray-800: #1E293B;
+            --shadow-sm: 0 4px 12px rgba(10, 137, 164, 0.08);
+            --shadow-md: 0 8px 20px rgba(10, 137, 164, 0.12);
+            --radius-md: 20px;
+            --radius-sm: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, var(--brand-bg), var(--white));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--gray-800);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 5%;
+            background: var(--brand-dark);
+            color: white;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 36px;
+            width: auto;
+        }
+
+        .logo span {
+            color: var(--brand-bright);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            margin-left: 6px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 40px;
+            background: var(--brand-main);
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: var(--brand-bright);
+            transform: translateY(-2px);
+        }
+
+        .auth-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .auth-card {
+            background: white;
+            max-width: 480px;
+            width: 100%;
+            padding: 48px 40px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(10, 137, 164, 0.15);
+            animation: fadeUp 0.6s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-header h2 {
+            font-size: 2rem;
+            color: var(--brand-dark);
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+        }
+
+        .auth-header p a {
+            color: var(--brand-main);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .auth-header p a:hover {
+            text-decoration: underline;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--brand-dark);
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--gray-50);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--brand-main);
+            box-shadow: 0 0 0 4px rgba(10, 137, 164, 0.15);
+            background: white;
+        }
+
+        .terms {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 24px 0;
+            color: var(--gray-600);
+            font-size: 0.95rem;
+        }
+
+        .terms input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--brand-main);
+        }
+
+        .terms a {
+            color: var(--brand-main);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--brand-main);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 18px rgba(10, 137, 164, 0.25);
+            margin-bottom: 24px;
+        }
+
+        .auth-btn:hover {
+            background: var(--brand-bright);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(10, 137, 164, 0.35);
+        }
+
+        .auth-footer {
+            text-align: center;
+            color: var(--gray-600);
+            font-size: 0.95rem;
+        }
+
+        .auth-footer a {
+            color: var(--brand-main);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 32px 24px;
+            }
+
+            .navbar {
+                gap: 12px;
+                text-align: center;
+            }
+
+            .form-row {
+                gap: 12px;
+                align-items: flex-start;
+            }
+        }
