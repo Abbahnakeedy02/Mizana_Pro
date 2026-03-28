@@ -51,7 +51,7 @@
       await updateProfile(user, { displayName: name });
       
       // 5. Redirect to dashboard or shop setup
-      window.location.href = "../admin/setup.html"; // adjust as needed
+      window.location.href = "../admin/login.html"; // adjust as needed
     } catch (error) {
       alert(error.message);
     }
