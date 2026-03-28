@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Business Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { main: '#132B77', accent: '#0A89A4' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .input-field {
+            width: 100%;
+            background-color: #f3f4f6;
+            border: 2px solid transparent;
+            border-radius: 1rem;
+            padding: 0.75rem 1rem;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        .dark .input-field {
+            background-color: rgba(55, 65, 81, 0.5);
+            color: #0A89A4;
+        }
+        .input-field:focus { border-color: #0A89A4; }
+        .edit-overlay { background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); }
+        .toggle-switch {
+            width: 2.5rem;
+            height: 1.25rem;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .toggle-switch.active { background-color: #0A89A4; }
+        .toggle-knob {
+            width: 1rem;
+            height: 1rem;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 0.125rem;
+            left: 0.125rem;
+            transition: transform 0.2s;
+        }
+        .toggle-switch.active .toggle-knob { transform: translateX(1.25rem); }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 2rem;
+            padding: 1.5rem;
+        }
+        .dark .modal-content { background: #1f2937; }
+        .staff-card {
+            transition: all 0.2s;
+        }
+        .staff-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        .role-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .role-manager { background: #0A89A4; color: white; }
+        .role-cashier { background: #e2e8f0; color: #1e293b; }
+        .dark .role-cashier { background: #4b5563; color: #e2e8f0; }
+        .status-badge {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-active { background: #10b981; }
+        .status-inactive { background: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Business Profile</h1>
+            </div>
+            <button id="editBtn" onclick="ui.toggleEdit()" class="text-brand-accent font-black text-xs uppercase tracking-widest hover:opacity-80 transition">
+                Edit
+            </button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-xl mx-auto pb-24">
+        <!-- Business Logo -->
+        <div class="flex flex-col items-center py-6">
+            <div class="relative group">
+                <div class="w-28 h-28 bg-gray-100 dark:bg-gray-800 rounded-3xl border-4 border-white dark:border-gray-800 shadow-xl flex items-center justify-center overflow-hidden">
+                    <img id="logoPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Ctext x='50' y='50' font-size='14' text-anchor='middle' dy='.3em' fill='%234a5568'%3E Logo %3C/text%3E%3C/svg%3E" class="w-full h-full object-cover" alt="">
+                    <div id="cameraIcon" class="hidden absolute inset-0 edit-overlay items-center justify-center cursor-pointer" onclick="document.getElementById('logoUpload').click()">
+                        <i class="fas fa-camera text-2xl text-white"></i>
+                    </div>
+                </div>
+                <input type="file" id="logoUpload" accept="image/*" class="hidden" onchange="ui.handleLogoUpload(event)">
+            </div>
+            <h2 id="businessName" class="mt-4 text-xl font-black dark:text-white">Mizan General Store</h2>
+            <p id="businessID" class="text-xs text-gray-500 font-medium">Business ID: #MP-99201</p>
+        </div>
+
+        <!-- Business Details Form -->
+        <form id="profileForm" class="space-y-6">
+            <!-- Basic Business Info -->
+            <section class="space-y-4">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Business Information</label>
+                <div class="space-y-2">
+                    <p class="text-xs font-bold px-1 dark:text-gray-300">Store Name</p>
+                    <input type="text" id="storeName" value="Mizan General Store" disabled class="input-field">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold px-1 dark:text-gray-300">Currency</p>
+                        <select id="currency" disabled class="input-field">
+                            <option value="NGN">₦ NGN (Nigerian Naira)</option>
+                            <option value="USD">$ USD</option>
+                            <option value="GBP">£ GBP</option>
+                            <option value="EUR">€ EUR</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold px-1 dark:text-gray-300">VAT Rate (%)</p>
+                        <input type="number" id="vatRate" value="7.5" step="0.1" min="0" max="100" disabled class="input-field">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Brand Colors -->
+            <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Brand Colors</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold px-1 dark:text-gray-300">Primary</p>
+                        <div class="flex gap-2">
+                            <input type="color" id="primaryColor" value="#132B77" disabled class="w-10 h-10 p-1 rounded-full border-2 border-gray-200 dark:border-gray-700">
+                            <input type="text" id="primaryColorText" value="#132B77" disabled class="input-field flex-1" placeholder="#RRGGBB">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold px-1 dark:text-gray-300">Accent</p>
+                        <div class="flex gap-2">
+                            <input type="color" id="accentColor" value="#0A89A4" disabled class="w-10 h-10 p-1 rounded-full border-2 border-gray-200 dark:border-gray-700">
+                            <input type="text" id="accentColorText" value="#0A89A4" disabled class="input-field flex-1" placeholder="#RRGGBB">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profit Calculation -->
+            <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Profit Method</label>
+                <select id="profitMethod" disabled class="input-field">
+                    <option value="fifo">First In, First Out (FIFO)</option>
+                    <option value="lifo">Last In, First Out (LIFO)</option>
+                    <option value="average">Weighted Average</option>
+                </select>
+            </section>
+
+            <!-- Staff Section (dynamic) -->
+            <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                <div class="flex justify-between items-center">
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Staff</label>
+                    <button type="button" class="text-[10px] font-black text-brand-accent uppercase" onclick="ui.openAddStaffModal()">+ Add</button>
+                </div>
+                <div id="staffList" class="space-y-3">
+                    <!-- Staff cards will be injected here -->
+                </div>
+            </section>
+
+            <!-- Notification Button -->
+            <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                <button type="button" onclick="ui.openNotificationModal()" class="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border dark:border-gray-700 hover:border-brand-accent/50 transition">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-bell text-brand-accent"></i>
+                        <span class="text-sm font-bold dark:text-white">Notification Preferences</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                </button>
+            </section>
+
+            <!-- Subscription -->
+            <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Subscription</label>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700 space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-xs font-bold dark:text-gray-300">Plan</span>
+                        <span id="planName" class="font-bold text-brand-accent">Pro Monthly</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs font-bold dark:text-gray-300">Billing Date</span>
+                        <span id="billingDate" class="font-bold">Feb 20, 2026</span>
+                    </div>
+                    <button type="button" onclick="window.location.href='subscription.html'" class="w-full bg-brand-accent/10 text-brand-accent py-2 rounded-xl text-xs font-bold hover:bg-brand-accent/20 transition">Manage</button>
+                </div>
+            </section>
+
+            <!-- Logout -->
+            <button type="button" onclick="ui.logout()" class="w-full py-4 text-red-500 font-black text-sm uppercase tracking-widest mt-4 hover:text-red-600 transition">
+                Log Out
+            </button>
+        </form>
+    </main>
+
+    <!-- Save Bar (appears in edit mode) -->
+    <div id="saveBar" class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-800 translate-y-full transition-transform duration-300">
+        <button onclick="ui.saveChanges()" class="w-full bg-brand-accent text-brand-main py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-opacity-90 transition">
+            SAVE CHANGES
+        </button>
+    </div>
+
+    <!-- Staff Add/Edit Modal -->
+    <div id="staffModal" class="modal" onclick="if(event.target === this) ui.closeStaffModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="staffModalTitle" class="text-xl font-black dark:text-white">Add Staff</h2>
+                <button onclick="ui.closeStaffModal()" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <i class="fas fa-times text-gray-400"></i>
+                </button>
+            </div>
+            <form id="staffForm" class="space-y-4">
+                <input type="hidden" id="staffId">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold dark:text-gray-300">Full Name</label>
+                    <input type="text" id="staffName" class="input-field" placeholder="e.g., Musa Adamu" required>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold dark:text-gray-300">Role</label>
+                    <select id="staffRole" class="input-field">
+                        <option value="cashier">Cashier</option>
+                        <option value="manager">Manager</option>
+                    </select>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold dark:text-gray-300">4‑Digit PIN</label>
+                    <input type="password" id="staffPin" maxlength="4" inputmode="numeric" pattern="\d*" class="input-field" placeholder="••••">
+                    <p class="text-[10px] text-gray-500">Leave blank to keep current PIN when editing.</p>
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                    <span class="text-sm font-bold dark:text-white">Active</span>
+                    <div class="toggle-switch" id="staffActiveToggle"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="flex gap-2 pt-4">
+                    <button type="submit" class="flex-1 bg-brand-accent text-brand-main py-3 rounded-xl font-bold hover:bg-opacity-90 transition">Save</button>
+                    <button type="button" onclick="ui.closeStaffModal()" class="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PIN Reset Modal -->
+    <div id="pinModal" class="modal" onclick="if(event.target === this) ui.closePinModal()">
+        <div class="modal-content max-w-sm" onclick="event.stopPropagation()">
+            <h3 class="text-lg font-black mb-4 dark:text-white">Reset PIN</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold dark:text-gray-300">New 4‑digit PIN</label>
+                    <input type="password" id="resetPin" maxlength="4" inputmode="numeric" pattern="\d*" class="input-field mt-1" placeholder="••••">
+                </div>
+                <div id="pinError" class="text-red-500 text-xs hidden"></div>
+                <div class="flex gap-2">
+                    <button onclick="ui.confirmPinReset()" class="flex-1 bg-brand-accent text-brand-main py-3 rounded-xl font-bold hover:bg-opacity-90 transition">Update</button>
+                    <button onclick="ui.closePinModal()" class="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal (with all toggle IDs added) -->
+    <div id="notificationModal" class="modal" onclick="if(event.target === this) ui.closeNotificationModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-black dark:text-white">Notification Preferences</h2>
+                <button onclick="ui.closeNotificationModal()" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <i class="fas fa-times text-gray-400"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mb-6">Configure which events trigger alerts and how you receive them.</p>
+
+            <div class="space-y-6">
+                <!-- Low Stock -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold dark:text-white">Low Stock</span>
+                        <div class="toggle-switch" id="notifyLowStockToggle"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                            <div class="toggle-switch small" id="notifyLowStockEmail"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                            <div class="toggle-switch small" id="notifyLowStockSms"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Push</span>
+                            <div class="toggle-switch small" id="notifyLowStockPush"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="text-xs text-gray-500">Threshold (units)</label>
+                            <input type="number" id="lowStockThreshold" value="5" min="1" class="input-field mt-1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expiry -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold dark:text-white">Expiry Warning</span>
+                        <div class="toggle-switch" id="notifyExpiryToggle"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                            <div class="toggle-switch small" id="notifyExpiryEmail"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                            <div class="toggle-switch small" id="notifyExpirySms"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="text-xs text-gray-500">Days before</label>
+                            <input type="number" id="expiryDays" value="7" min="1" class="input-field mt-1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Change -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold dark:text-white">Price Change</span>
+                        <div class="toggle-switch" id="notifyPriceChangeToggle"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                            <div class="toggle-switch small" id="notifyPriceChangeEmail"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                            <div class="toggle-switch small" id="notifyPriceChangeSms"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="text-xs text-gray-500">Discount threshold (%)</label>
+                            <input type="number" id="discountThreshold" value="10" min="0" max="100" class="input-field mt-1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Damage / Expenses -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold dark:text-white">Damage / Expenses</span>
+                        <div class="toggle-switch" id="notifyDamageToggle"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                            <div class="toggle-switch small" id="notifyDamageEmail"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                            <div class="toggle-switch small" id="notifyDamageSms"><div class="toggle-knob"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voided Sale -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold dark:text-white">Voided Sale</span>
+                        <div class="toggle-switch" id="notifyVoidedToggle"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                            <div class="toggle-switch small" id="notifyVoidedEmail"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                            <div class="toggle-switch small" id="notifyVoidedSms"><div class="toggle-knob"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Debt Review -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold dark:text-white">Debt Review</span>
+                        <div class="toggle-switch" id="notifyDebtReviewToggle"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                            <div class="toggle-switch small" id="notifyDebtReviewEmail"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                            <div class="toggle-switch small" id="notifyDebtReviewSms"><div class="toggle-knob"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Hours -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold dark:text-white">Business Hours Alert</span>
+                        <div class="toggle-switch" id="notifyBusinessHoursToggle"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="time" id="businessStart" value="09:00" class="input-field">
+                            <input type="time" id="businessEnd" value="21:00" class="input-field">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                            <div class="toggle-switch small" id="notifyBusinessHoursEmail"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                            <div class="toggle-switch small" id="notifyBusinessHoursSms"><div class="toggle-knob"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheduled Reports -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold dark:text-white">Scheduled Reports</span>
+                        <div class="toggle-switch" id="notifyReportsToggle"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                        <select id="reportFrequency" class="input-field">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                        <input type="time" id="reportTime" value="18:00" class="input-field">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                            <div class="toggle-switch small" id="notifyReportsEmail"><div class="toggle-knob"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-2">
+                <button onclick="ui.saveNotificationSettings()" class="flex-1 bg-brand-accent text-brand-main py-3 rounded-xl font-bold hover:bg-opacity-90 transition">Save</button>
+                <button onclick="ui.closeNotificationModal()" class="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg z-50 hidden"></div>
+    <!-- At the bottom of your body, before your other scripts -->
+<script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js"
+        }
+    }
+</script>
+<script type="module" src="../JS/firebase-config.js"></script>
+<script type="module">
+    import { auth } from '../JS/firebase-config.js';
+    import { settingsService, staffService } from '../JS/data_service.js';
+    import { onAuthStateChanged } from "firebase/auth";
+
+    // ================== POPULATE FORM FUNCTION ==================
+    function populateForm(settings) {
+        console.log('Populating form with:', settings);
+        
+        // Business Info
+        const storeName = document.getElementById('storeName');
+        if (storeName) storeName.value = settings.shop?.businessName || '';
+        
+        const currency = document.getElementById('currency');
+        if (currency) currency.value = settings.shop?.currency || 'NGN';
+        
+        const vatRate = document.getElementById('vatRate');
+        if (vatRate) vatRate.value = settings.shop?.vat || 7.5;
+        
+        // Brand Colors
+        const primaryColor = document.getElementById('primaryColor');
+        const primaryText = document.getElementById('primaryColorText');
+        if (primaryColor && primaryText) {
+            primaryColor.value = settings.brand?.primary || '#132B77';
+            primaryText.value = settings.brand?.primary || '#132B77';
+        }
+        
+        const accentColor = document.getElementById('accentColor');
+        const accentText = document.getElementById('accentColorText');
+        if (accentColor && accentText) {
+            accentColor.value = settings.brand?.accent || '#0A89A4';
+            accentText.value = settings.brand?.accent || '#0A89A4';
+        }
+        
+        // Profit Method
+        const profitMethod = document.getElementById('profitMethod');
+        if (profitMethod) profitMethod.value = settings.profitMethod || 'fifo';
+        
+        // Subscription
+        const planName = document.getElementById('planName');
+        if (planName) planName.innerText = settings.subscription?.plan || 'Pro Monthly';
+        
+        const billingDate = document.getElementById('billingDate');
+        if (billingDate) billingDate.innerText = settings.subscription?.billingDate || 'Feb 20, 2026';
+    }
+
+    // ================== RENDER STAFF FUNCTION ==================
+    function renderStaffList(staff) {
+        const container = document.getElementById('staffList');
+        if (!container) return;
+        
+        if (!staff || staff.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-4">No staff members yet.</p>';
+            return;
+        }
+        
+        container.innerHTML = staff.map(s => `
+            <div class="staff-card bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-brand-accent/20 text-brand-accent flex items-center justify-center font-black text-sm">
+                            ${s.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </div>
+                        <div>
+                            <h3 class="font-bold dark:text-white text-sm">${s.name}</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="role-badge ${s.role === 'manager' ? 'role-manager' : 'role-cashier'} text-[10px]">${s.role}</span>
+                                <span class="status-badge ${s.active ? 'status-active' : 'status-inactive'}"></span>
+                                <span class="text-[8px] text-gray-500">${s.active ? 'Active' : 'Inactive'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ================== SAVE FUNCTION ==================
+    window.saveBusinessProfile = async function() {
+        try {
+            const settings = {
+                shop: {
+                    businessName: document.getElementById('storeName')?.value || '',
+                    currency: document.getElementById('currency')?.value || 'NGN',
+                    vat: parseFloat(document.getElementById('vatRate')?.value) || 7.5
+                },
+                brand: {
+                    primary: document.getElementById('primaryColor')?.value || '#132B77',
+                    accent: document.getElementById('accentColor')?.value || '#0A89A4'
+                },
+                profitMethod: document.getElementById('profitMethod')?.value || 'fifo',
+                subscription: JSON.parse(localStorage.getItem('mizana_settings'))?.subscription || {
+                    plan: 'Pro Monthly',
+                    billingDate: 'Feb 20, 2026'
+                }
+            };
+            
+            await settingsService.save(settings);
+            alert('Settings saved!');
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Error saving: ' + error.message);
+        }
+    };
+
+    // ================== AUTH CHECK AND DATA LOAD ==================
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            console.log('No user, redirecting to login');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        console.log('User logged in:', user.email);
+        
+        try {
+            // Load settings
+            const settings = await settingsService.load();
+            populateForm(settings);
+            
+            // Load staff
+            const staff = await staffService.getAll();
+            renderStaffList(staff);
+            
+            console.log('Data loaded successfully');
+        } catch (error) {
+            console.error('Error loading data:', error);
+            document.body.innerHTML += `<div style="color:red; padding:20px;">Error loading data: ${error.message}</div>`;
+        }
+    });
+
+    // ================== COLOR SYNC ==================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sync color inputs
+        const primaryColor = document.getElementById('primaryColor');
+        const primaryText = document.getElementById('primaryColorText');
+        if (primaryColor && primaryText) {
+            primaryColor.addEventListener('input', () => { primaryText.value = primaryColor.value; });
+            primaryText.addEventListener('input', () => { primaryColor.value = primaryText.value; });
+        }
+        
+        const accentColor = document.getElementById('accentColor');
+        const accentText = document.getElementById('accentColorText');
+        if (accentColor && accentText) {
+            accentColor.addEventListener('input', () => { accentText.value = accentColor.value; });
+            accentText.addEventListener('input', () => { accentColor.value = accentText.value; });
+        }
+    });
+</script>
+    <script>
+        document.getElementById('logoPreview').onerror = function() {
+    this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3Ctext x='50' y='50' font-size='14' text-anchor='middle' dy='.3em' fill='%234a5568'%3E Logo %3C/text%3E%3C/svg%3E";
+};
+        // ================== Helper: simple hash ==================
+        async function simpleHash(message) {
+            const msgUint8 = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // ================== Dark mode ==================
+        (function() {
+            const prefersDark = localStorage.getItem('darkMode') === 'true';
+            if (prefersDark) document.body.classList.add('dark');
+        })();
+
+        // ================== Data Services ==================
+        const settingsService = (function() {
+            let settings = {};
+            function load() {
+                const stored = localStorage.getItem('mizana_settings');
+                if (stored) {
+                    settings = JSON.parse(stored);
+                } else {
+                    settings = {
+                        shop: { businessName: 'Mizan General Store', currency: 'NGN', vat: 7.5 },
+                        brand: { primary: '#132B77', accent: '#0A89A4' },
+                        profitMethod: 'fifo',
+                        subscription: { plan: 'Pro Monthly', billingDate: 'Feb 20, 2026' },
+                        notifications: {
+                            lowStock: { enabled: true, email: true, sms: false, push: false, threshold: 5 },
+                            expiry: { enabled: true, email: true, sms: false, days: 7 },
+                            priceChange: { enabled: true, email: true, sms: false, discountThreshold: 10 },
+                            damage: { enabled: true, email: true, sms: false },
+                            voided: { enabled: true, email: true, sms: false },
+                            debtReview: { enabled: true, email: true, sms: false },
+                            businessHours: { enabled: true, email: true, sms: false, start: '09:00', end: '21:00' },
+                            reports: { enabled: true, email: true, frequency: 'daily', time: '18:00' }
+                        }
+                    };
+                }
+                return settings;
+            }
+            function save(newSettings) {
+                settings = { ...settings, ...newSettings };
+                localStorage.setItem('mizana_settings', JSON.stringify(settings));
+            }
+            return { load, save };
+        })();
+
+        const staffService = (function() {
+            let staffList = [];
+            function load() {
+                const stored = localStorage.getItem('staff');
+                if (stored) {
+                    staffList = JSON.parse(stored);
+                } else {
+                    staffList = [
+                        { id: 'staff-1', name: 'Musa Adamu', role: 'cashier', pinHash: null, active: true, createdAt: new Date().toISOString() },
+                        { id: 'staff-2', name: 'Fatima Bello', role: 'manager', pinHash: null, active: true, createdAt: new Date().toISOString() }
+                    ];
+                    save();
+                }
+                return staffList;
+            }
+            function save() {
+                localStorage.setItem('staff', JSON.stringify(staffList));
+            }
+            function getAll() { return [...staffList]; }
+            function getById(id) { return staffList.find(s => s.id === id); }
+            async function add(name, role, pin, active) {
+                let pinHash = null;
+                if (pin) pinHash = await simpleHash(pin);
+                const newStaff = {
+                    id: 'staff-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                    name,
+                    role,
+                    pinHash,
+                    active,
+                    createdAt: new Date().toISOString()
+                };
+                staffList.push(newStaff);
+                save();
+                return newStaff;
+            }
+            async function update(id, name, role, pin, active) {
+                const index = staffList.findIndex(s => s.id === id);
+                if (index === -1) return false;
+                const staff = staffList[index];
+                staff.name = name;
+                staff.role = role;
+                staff.active = active;
+                if (pin) staff.pinHash = await simpleHash(pin);
+                save();
+                return true;
+            }
+            function remove(id) {
+                staffList = staffList.filter(s => s.id !== id);
+                save();
+            }
+            async function setPin(id, newPin) {
+                const staff = staffList.find(s => s.id === id);
+                if (!staff) return false;
+                staff.pinHash = await simpleHash(newPin);
+                save();
+                return true;
+            }
+            return { load, getAll, getById, add, update, remove, setPin };
+        })();
+
+        // ================== UI Controller ==================
+        const ui = (function() {
+            let isEditing = false;
+            let originalSettings = null;
+
+            // DOM elements
+            const editBtn = document.getElementById('editBtn');
+            const saveBar = document.getElementById('saveBar');
+            const cameraIcon = document.getElementById('cameraIcon');
+            const inputs = document.querySelectorAll('.input-field');
+            const storeName = document.getElementById('storeName');
+            const currency = document.getElementById('currency');
+            const vatRate = document.getElementById('vatRate');
+            const primaryColor = document.getElementById('primaryColor');
+            const primaryColorText = document.getElementById('primaryColorText');
+            const accentColor = document.getElementById('accentColor');
+            const accentColorText = document.getElementById('accentColorText');
+            const profitMethod = document.getElementById('profitMethod');
+            const planName = document.getElementById('planName');
+            const billingDate = document.getElementById('billingDate');
+            const logoPreview = document.getElementById('logoPreview');
+            const staffListEl = document.getElementById('staffList');
+            const staffModal = document.getElementById('staffModal');
+            const staffModalTitle = document.getElementById('staffModalTitle');
+            const staffId = document.getElementById('staffId');
+            const staffName = document.getElementById('staffName');
+            const staffRole = document.getElementById('staffRole');
+            const staffPin = document.getElementById('staffPin');
+            const staffActiveToggle = document.getElementById('staffActiveToggle');
+            const pinModal = document.getElementById('pinModal');
+            const resetPin = document.getElementById('resetPin');
+            const pinError = document.getElementById('pinError');
+            const toast = document.getElementById('toast');
+            const notificationModal = document.getElementById('notificationModal');
+            // Notification toggle elements (assume they exist after IDs are added)
+            const notifyLowStockToggle = document.getElementById('notifyLowStockToggle');
+            const notifyLowStockEmail = document.getElementById('notifyLowStockEmail');
+            const notifyLowStockSms = document.getElementById('notifyLowStockSms');
+            const notifyLowStockPush = document.getElementById('notifyLowStockPush');
+            const lowStockThreshold = document.getElementById('lowStockThreshold');
+            const notifyExpiryToggle = document.getElementById('notifyExpiryToggle');
+            const notifyExpiryEmail = document.getElementById('notifyExpiryEmail');
+            const notifyExpirySms = document.getElementById('notifyExpirySms');
+            const expiryDays = document.getElementById('expiryDays');
+            const notifyPriceChangeToggle = document.getElementById('notifyPriceChangeToggle');
+            const notifyPriceChangeEmail = document.getElementById('notifyPriceChangeEmail');
+            const notifyPriceChangeSms = document.getElementById('notifyPriceChangeSms');
+            const discountThreshold = document.getElementById('discountThreshold');
+            const notifyDamageToggle = document.getElementById('notifyDamageToggle');
+            const notifyDamageEmail = document.getElementById('notifyDamageEmail');
+            const notifyDamageSms = document.getElementById('notifyDamageSms');
+            const notifyVoidedToggle = document.getElementById('notifyVoidedToggle');
+            const notifyVoidedEmail = document.getElementById('notifyVoidedEmail');
+            const notifyVoidedSms = document.getElementById('notifyVoidedSms');
+            const notifyDebtReviewToggle = document.getElementById('notifyDebtReviewToggle');
+            const notifyDebtReviewEmail = document.getElementById('notifyDebtReviewEmail');
+            const notifyDebtReviewSms = document.getElementById('notifyDebtReviewSms');
+            const notifyBusinessHoursToggle = document.getElementById('notifyBusinessHoursToggle');
+            const businessStart = document.getElementById('businessStart');
+            const businessEnd = document.getElementById('businessEnd');
+            const notifyBusinessHoursEmail = document.getElementById('notifyBusinessHoursEmail');
+            const notifyBusinessHoursSms = document.getElementById('notifyBusinessHoursSms');
+            const notifyReportsToggle = document.getElementById('notifyReportsToggle');
+            const reportFrequency = document.getElementById('reportFrequency');
+            const reportTime = document.getElementById('reportTime');
+            const notifyReportsEmail = document.getElementById('notifyReportsEmail');
+
+            // Helper functions
+            function showToast(msg, isError = false) {
+                toast.innerText = msg;
+                toast.classList.remove('hidden');
+                toast.style.backgroundColor = isError ? '#dc2626' : '#1f2937';
+                setTimeout(() => toast.classList.add('hidden'), 2000);
+            }
+            function setToggle(el, state) {
+                if (!el) return;
+                if (state) el.classList.add('active');
+                else el.classList.remove('active');
+            }
+            function getToggleState(el) {
+                return el ? el.classList.contains('active') : false;
+            }
+            function disableInputs(disabled) {
+                inputs.forEach(i => i.disabled = disabled);
+            }
+
+            // Load main business data
+            function loadMainForm() {
+                const settings = settingsService.load();
+                storeName.value = settings.shop?.businessName || '';
+                currency.value = settings.shop?.currency || 'NGN';
+                vatRate.value = settings.shop?.vat ?? 7.5;
+                primaryColor.value = settings.brand?.primary || '#132B77';
+                primaryColorText.value = settings.brand?.primary || '#132B77';
+                accentColor.value = settings.brand?.accent || '#0A89A4';
+                accentColorText.value = settings.brand?.accent || '#0A89A4';
+                profitMethod.value = settings.profitMethod || 'fifo';
+                planName.innerText = settings.subscription?.plan || 'Pro Monthly';
+                billingDate.innerText = settings.subscription?.billingDate || 'Feb 20, 2026';
+            }
+
+            // Staff rendering
+            function renderStaffList() {
+                const staff = staffService.getAll();
+                if (staff.length === 0) {
+                    staffListEl.innerHTML = '<p class="text-center text-gray-500 py-4">No staff members yet.</p>';
+                    return;
+                }
+                staffListEl.innerHTML = staff.map(s => `
+                    <div class="staff-card bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-brand-accent/20 text-brand-accent flex items-center justify-center font-black text-sm">
+                                    ${s.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold dark:text-white text-sm">${s.name}</h3>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="role-badge ${s.role === 'manager' ? 'role-manager' : 'role-cashier'} text-[10px]">${s.role}</span>
+                                        <span class="status-badge ${s.active ? 'status-active' : 'status-inactive'}"></span>
+                                        <span class="text-[8px] text-gray-500">${s.active ? 'Active' : 'Inactive'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="ui.editStaff('${s.id}')" class="p-1 text-gray-400 hover:text-brand-accent"><i class="fas fa-edit text-xs"></i></button>
+                                <button onclick="ui.openPinReset('${s.id}')" class="p-1 text-gray-400 hover:text-brand-accent"><i class="fas fa-key text-xs"></i></button>
+                                <button onclick="ui.toggleStaffActive('${s.id}')" class="p-1 text-gray-400 hover:text-brand-accent"><i class="fas ${s.active ? 'fa-toggle-on' : 'fa-toggle-off'} text-xs"></i></button>
+                                <button onclick="ui.deleteStaff('${s.id}')" class="p-1 text-gray-400 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Staff modal
+            function openAddStaffModal() {
+                staffModalTitle.innerText = 'Add Staff';
+                staffId.value = '';
+                staffName.value = '';
+                staffRole.value = 'cashier';
+                staffPin.value = '';
+                setToggle(staffActiveToggle, true);
+                staffModal.classList.add('active');
+            }
+            function editStaff(id) {
+                const staff = staffService.getById(id);
+                if (!staff) return;
+                staffModalTitle.innerText = 'Edit Staff';
+                staffId.value = staff.id;
+                staffName.value = staff.name;
+                staffRole.value = staff.role;
+                staffPin.value = '';
+                setToggle(staffActiveToggle, staff.active);
+                staffModal.classList.add('active');
+            }
+            function closeStaffModal() {
+                staffModal.classList.remove('active');
+            }
+            async function saveStaff(e) {
+                e.preventDefault();
+                const name = staffName.value.trim();
+                const role = staffRole.value;
+                const pin = staffPin.value.trim();
+                const active = getToggleState(staffActiveToggle);
+                const id = staffId.value;
+
+                if (!name) { showToast('Name required', true); return; }
+                if (!id && !pin) { showToast('PIN required for new staff', true); return; }
+                if (pin && !/^\d{4}$/.test(pin)) { showToast('PIN must be 4 digits', true); return; }
+
+                if (id) {
+                    await staffService.update(id, name, role, pin, active);
+                    showToast('Staff updated');
+                } else {
+                    await staffService.add(name, role, pin, active);
+                    showToast('Staff added');
+                }
+                closeStaffModal();
+                renderStaffList();
+            }
+
+            // PIN reset
+            function openPinReset(id) {
+                currentStaffIdForPin = id;
+                resetPin.value = '';
+                pinError.classList.add('hidden');
+                pinModal.classList.add('active');
+            }
+            function closePinModal() {
+                pinModal.classList.remove('active');
+                currentStaffIdForPin = null;
+            }
+            async function confirmPinReset() {
+                const newPin = resetPin.value.trim();
+                if (!/^\d{4}$/.test(newPin)) {
+                    pinError.innerText = 'PIN must be exactly 4 digits';
+                    pinError.classList.remove('hidden');
+                    return;
+                }
+                await staffService.setPin(currentStaffIdForPin, newPin);
+                showToast('PIN updated');
+                closePinModal();
+            }
+
+            // Toggle staff active status
+            async function toggleStaffActive(id) {
+                const staff = staffService.getById(id);
+                if (!staff) return;
+                staff.active = !staff.active;
+                staffService.save();
+                renderStaffList();
+                showToast(`Staff ${staff.active ? 'activated' : 'deactivated'}`);
+            }
+
+            // Delete staff
+            function deleteStaff(id) {
+                if (confirm('Delete this staff member?')) {
+                    staffService.remove(id);
+                    renderStaffList();
+                    showToast('Staff deleted');
+                }
+            }
+
+            // Business profile edit mode
+            function toggleEdit() {
+                isEditing = !isEditing;
+                if (isEditing) {
+                    originalSettings = JSON.parse(JSON.stringify(settingsService.load()));
+                    editBtn.innerText = "Cancel";
+                    editBtn.classList.replace('text-brand-accent', 'text-gray-400');
+                    saveBar.classList.remove('translate-y-full');
+                    cameraIcon.classList.remove('hidden');
+                    cameraIcon.classList.add('flex');
+                    disableInputs(false);
+                } else {
+                    restoreOriginal();
+                    editBtn.innerText = "Edit";
+                    editBtn.classList.replace('text-gray-400', 'text-brand-accent');
+                    saveBar.classList.add('translate-y-full');
+                    cameraIcon.classList.add('hidden');
+                    cameraIcon.classList.remove('flex');
+                    disableInputs(true);
+                }
+            }
+            function restoreOriginal() {
+                if (!originalSettings) return;
+                const settings = originalSettings;
+                storeName.value = settings.shop?.businessName || '';
+                currency.value = settings.shop?.currency || 'NGN';
+                vatRate.value = settings.shop?.vat ?? 7.5;
+                primaryColor.value = settings.brand?.primary || '#132B77';
+                primaryColorText.value = settings.brand?.primary || '#132B77';
+                accentColor.value = settings.brand?.accent || '#0A89A4';
+                accentColorText.value = settings.brand?.accent || '#0A89A4';
+                profitMethod.value = settings.profitMethod || 'fifo';
+            }
+            function saveChanges() {
+                const current = settingsService.load();
+                const updated = {
+                    shop: {
+                        businessName: storeName.value,
+                        currency: currency.value,
+                        vat: parseFloat(vatRate.value) || 7.5
+                    },
+                    brand: {
+                        primary: primaryColor.value,
+                        accent: accentColor.value
+                    },
+                    profitMethod: profitMethod.value,
+                    subscription: current.subscription,
+                    notifications: current.notifications // preserve notifications
+                };
+                settingsService.save(updated);
+                showToast('Business profile updated');
+                // Exit edit mode
+                isEditing = false;
+                editBtn.innerText = "Edit";
+                editBtn.classList.replace('text-gray-400', 'text-brand-accent');
+                saveBar.classList.add('translate-y-full');
+                cameraIcon.classList.add('hidden');
+                cameraIcon.classList.remove('flex');
+                disableInputs(true);
+            }
+
+            // Logo upload
+            function handleLogoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => { logoPreview.src = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+
+            // Notification modal
+            function loadNotificationModal() {
+                const settings = settingsService.load().notifications || {};
+                setToggle(notifyLowStockToggle, settings.lowStock?.enabled);
+                setToggle(notifyLowStockEmail, settings.lowStock?.email);
+                setToggle(notifyLowStockSms, settings.lowStock?.sms);
+                setToggle(notifyLowStockPush, settings.lowStock?.push);
+                if (lowStockThreshold) lowStockThreshold.value = settings.lowStock?.threshold ?? 5;
+                setToggle(notifyExpiryToggle, settings.expiry?.enabled);
+                setToggle(notifyExpiryEmail, settings.expiry?.email);
+                setToggle(notifyExpirySms, settings.expiry?.sms);
+                if (expiryDays) expiryDays.value = settings.expiry?.days ?? 7;
+                setToggle(notifyPriceChangeToggle, settings.priceChange?.enabled);
+                setToggle(notifyPriceChangeEmail, settings.priceChange?.email);
+                setToggle(notifyPriceChangeSms, settings.priceChange?.sms);
+                if (discountThreshold) discountThreshold.value = settings.priceChange?.discountThreshold ?? 10;
+                setToggle(notifyDamageToggle, settings.damage?.enabled);
+                setToggle(notifyDamageEmail, settings.damage?.email);
+                setToggle(notifyDamageSms, settings.damage?.sms);
+                setToggle(notifyVoidedToggle, settings.voided?.enabled);
+                setToggle(notifyVoidedEmail, settings.voided?.email);
+                setToggle(notifyVoidedSms, settings.voided?.sms);
+                setToggle(notifyDebtReviewToggle, settings.debtReview?.enabled);
+                setToggle(notifyDebtReviewEmail, settings.debtReview?.email);
+                setToggle(notifyDebtReviewSms, settings.debtReview?.sms);
+                setToggle(notifyBusinessHoursToggle, settings.businessHours?.enabled);
+                if (businessStart) businessStart.value = settings.businessHours?.start || '09:00';
+                if (businessEnd) businessEnd.value = settings.businessHours?.end || '21:00';
+                setToggle(notifyBusinessHoursEmail, settings.businessHours?.email);
+                setToggle(notifyBusinessHoursSms, settings.businessHours?.sms);
+                setToggle(notifyReportsToggle, settings.reports?.enabled);
+                if (reportFrequency) reportFrequency.value = settings.reports?.frequency || 'daily';
+                if (reportTime) reportTime.value = settings.reports?.time || '18:00';
+                setToggle(notifyReportsEmail, settings.reports?.email);
+            }
+            function openNotificationModal() {
+                loadNotificationModal();
+                notificationModal.classList.add('active');
+            }
+            function closeNotificationModal() {
+                notificationModal.classList.remove('active');
+            }
+            function saveNotificationSettings() {
+                const notifications = {
+                    lowStock: {
+                        enabled: getToggleState(notifyLowStockToggle),
+                        email: getToggleState(notifyLowStockEmail),
+                        sms: getToggleState(notifyLowStockSms),
+                        push: getToggleState(notifyLowStockPush),
+                        threshold: parseInt(lowStockThreshold?.value) || 5
+                    },
+                    expiry: {
+                        enabled: getToggleState(notifyExpiryToggle),
+                        email: getToggleState(notifyExpiryEmail),
+                        sms: getToggleState(notifyExpirySms),
+                        days: parseInt(expiryDays?.value) || 7
+                    },
+                    priceChange: {
+                        enabled: getToggleState(notifyPriceChangeToggle),
+                        email: getToggleState(notifyPriceChangeEmail),
+                        sms: getToggleState(notifyPriceChangeSms),
+                        discountThreshold: parseInt(discountThreshold?.value) || 10
+                    },
+                    damage: {
+                        enabled: getToggleState(notifyDamageToggle),
+                        email: getToggleState(notifyDamageEmail),
+                        sms: getToggleState(notifyDamageSms)
+                    },
+                    voided: {
+                        enabled: getToggleState(notifyVoidedToggle),
+                        email: getToggleState(notifyVoidedEmail),
+                        sms: getToggleState(notifyVoidedSms)
+                    },
+                    debtReview: {
+                        enabled: getToggleState(notifyDebtReviewToggle),
+                        email: getToggleState(notifyDebtReviewEmail),
+                        sms: getToggleState(notifyDebtReviewSms)
+                    },
+                    businessHours: {
+                        enabled: getToggleState(notifyBusinessHoursToggle),
+                        start: businessStart?.value || '09:00',
+                        end: businessEnd?.value || '21:00',
+                        email: getToggleState(notifyBusinessHoursEmail),
+                        sms: getToggleState(notifyBusinessHoursSms)
+                    },
+                    reports: {
+                        enabled: getToggleState(notifyReportsToggle),
+                        frequency: reportFrequency?.value || 'daily',
+                        time: reportTime?.value || '18:00',
+                        email: getToggleState(notifyReportsEmail)
+                    }
+                };
+                const current = settingsService.load();
+                current.notifications = notifications;
+                settingsService.save(current);
+                showToast('Notification settings saved');
+                closeNotificationModal();
+            }
+
+            // Logout
+            function logout() {
+                if (confirm('Log out?')) window.location.href = 'login.html';
+            }
+
+            // Color sync listeners
+            primaryColor.addEventListener('input', () => { if (primaryColorText) primaryColorText.value = primaryColor.value; });
+            primaryColorText.addEventListener('input', () => { if (primaryColor) primaryColor.value = primaryColorText.value; });
+            accentColor.addEventListener('input', () => { if (accentColorText) accentColorText.value = accentColor.value; });
+            accentColorText.addEventListener('input', () => { if (accentColor) accentColor.value = accentColorText.value; });
+
+            // Attach staff form submit
+            document.getElementById('staffForm').addEventListener('submit', saveStaff);
+
+            // Initialize
+            function init() {
+                loadMainForm();
+                staffService.load();
+                renderStaffList();
+                disableInputs(true);
+                // Toggle click listeners for all toggle switches
+                document.querySelectorAll('.toggle-switch').forEach(t => {
+                    t.addEventListener('click', () => t.classList.toggle('active'));
+                });
+            }
+
+            // Expose public methods
+            return {
+                init,
+                toggleEdit,
+                saveChanges,
+                handleLogoUpload,
+                openAddStaffModal,
+                editStaff,
+                closeStaffModal,
+                openPinReset,
+                closePinModal,
+                confirmPinReset,
+                toggleStaffActive,
+                deleteStaff,
+                openNotificationModal,
+                closeNotificationModal,
+                saveNotificationSettings,
+                logout
+            };
+        })();
+
+        // Start the app
+        ui.init();
+        // Add this function to your script
+function populateForm(settings) {
+    console.log('Populating form with:', settings);
+    
+    // Business Info
+    document.getElementById('storeName').value = settings.shop?.businessName || '';
+    document.getElementById('currency').value = settings.shop?.currency || 'NGN';
+    document.getElementById('vatRate').value = settings.shop?.vat || 7.5;
+    
+    // Brand Colors
+    document.getElementById('primaryColor').value = settings.brand?.primary || '#132B77';
+    document.getElementById('primaryColorText').value = settings.brand?.primary || '#132B77';
+    document.getElementById('accentColor').value = settings.brand?.accent || '#0A89A4';
+    document.getElementById('accentColorText').value = settings.brand?.accent || '#0A89A4';
+    
+    // Profit Method
+    document.getElementById('profitMethod').value = settings.profitMethod || 'fifo';
+    
+    // Subscription
+    document.getElementById('planName').innerText = settings.subscription?.plan || 'Pro Monthly';
+    document.getElementById('billingDate').innerText = settings.subscription?.billingDate || 'Feb 20, 2026';
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#132B77',
+                            accent: '#0A89A4',
+                            cyan: '#16B2C1'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .pane-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hidden-item { display: none !important; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        #saveBar {
+            transition: transform 0.3s ease;
+            transform: translateY(100%);
+            z-index: 60;
+        }
+        #saveBar.show {
+            transform: translateY(0);
+        }
+        .field-changed {
+            border-left: 3px solid #0A89A4;
+            padding-left: 8px;
+        }
+        .profit-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen overflow-hidden">
+
+    <!-- Main pane (settings list) -->
+    <div id="mainPane" class="h-screen flex flex-col pane-transition">
+        <!-- Header identical to dashboard -->
+        <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 flex items-center gap-4 h-20">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white hidden sm:block">Settings</h1>
+            </div>
+
+            <!-- Search bar -->
+            <div class="relative flex items-center transition-all duration-300 w-10 h-10 md:flex-1 md:max-w-md ml-2 md:ml-0" id="searchContainer">
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10 pointer-events-none"></i>
+                <input type="search" id="settingSearch" placeholder="Search settings..." 
+                       onfocus="handleSearchFocus()" 
+                       onblur="handleSearchBlur()"
+                       class="w-full h-10 pl-10 pr-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-100 md:bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-accent transition-all cursor-pointer md:cursor-text placeholder-transparent md:placeholder-gray-400">
+            </div>
+
+            <!-- Right side icons (dark mode only) -->
+            <div class="flex items-center gap-3 ml-auto transition-opacity duration-300" id="headerActions">
+                <button id="darkModeToggle" class="text-gray-600 dark:text-gray-300 w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:inline"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Settings list (scrollable) -->
+        <div id="settingsList" class="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
+            <!-- Cards with data-name for search -->
+            <div data-name="shop profile business name logo currency" onclick="openDetail('shop')" class="bg-white dark:bg-gray-800 p-5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-95 transition shadow-sm border border-transparent hover:border-brand-accent/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-brand-accent rounded-full flex items-center justify-center text-xl"><i class="fas fa-store"></i></div>
+                    <div><h3 class="font-bold dark:text-white">Shop Profile</h3><p class="text-xs text-gray-500 dark:text-gray-400">Business name & Currency</p></div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+            </div>
+
+            <div data-name="display view grid list dark mode font theme" onclick="openDetail('display')" class="bg-white dark:bg-gray-800 p-5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-95 transition shadow-sm border border-transparent hover:border-brand-accent/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-desktop"></i></div>
+                    <div><h3 class="font-bold dark:text-white">Display & View</h3><p class="text-xs text-gray-500 dark:text-gray-400">Theme, Font, Compact mode</p></div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+            </div>
+
+            <div data-name="inventory rules stock alerts categories products profit" onclick="openDetail('inventory')" class="bg-white dark:bg-gray-800 p-5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-95 transition shadow-sm border border-transparent hover:border-brand-accent/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-boxes"></i></div>
+                    <div><h3 class="font-bold dark:text-white">Inventory Rules</h3><p class="text-xs text-gray-500 dark:text-gray-400">Stock alerts & Profit</p></div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+            </div>
+
+            <div data-name="subscription plan billing pro premium" onclick="openDetail('subscription')" class="bg-white dark:bg-gray-800 p-5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-95 transition shadow-sm border border-transparent hover:border-brand-accent/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 text-purple-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-crown"></i></div>
+                    <div><h3 class="font-bold dark:text-white">Subscription</h3><p class="text-xs text-gray-500 dark:text-gray-400">Mizana Pro Status</p></div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+            </div>
+
+            <div data-name="notifications alerts sounds reports" onclick="openDetail('notifications')" class="bg-white dark:bg-gray-800 p-5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-95 transition shadow-sm border border-transparent hover:border-brand-accent/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-bell"></i></div>
+                    <div><h3 class="font-bold dark:text-white">Notifications</h3><p class="text-xs text-gray-500 dark:text-gray-400">Alerts & Daily Reports</p></div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+            </div>
+
+            <div data-name="staff mode cashier admin roles permissions" onclick="openDetail('staff')" class="bg-white dark:bg-gray-800 p-5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-95 transition shadow-sm border border-transparent hover:border-brand-accent/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 text-teal-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-user-shield"></i></div>
+                    <div><h3 class="font-bold dark:text-white">Staff Mode</h3><p class="text-xs text-gray-500 dark:text-gray-400">Roles & Permissions</p></div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+            </div>
+
+            <div id="noResults" class="hidden text-center py-20">
+                <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-700 mb-4"></i>
+                <p class="text-gray-500 dark:text-gray-400">No settings found</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail pane (slides in from right) -->
+    <div id="detailPane" class="fixed inset-0 bg-gray-50 dark:bg-gray-900 z-50 translate-x-full pane-transition flex flex-col">
+        <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 flex items-center gap-4 h-20">
+            <button onclick="closeDetail()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-accent">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 id="detailTitle" class="text-xl font-bold dark:text-white">Detail</h1>
+        </header>
+        <div id="detailContent" class="flex-1 overflow-y-auto p-4 space-y-2 pb-24"></div>
+        
+        <!-- Floating save button (hidden by default) -->
+        <div id="saveBar" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-4 shadow-lg">
+            <button onclick="saveChanges()" class="w-full bg-brand-accent text-brand-main py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2">
+                <i class="fas fa-check"></i> Save Changes
+            </button>
+        </div>
+    </div>    
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ================== DARK MODE ==================
+            const darkToggle = document.getElementById('darkModeToggle');
+            const prefersDark = localStorage.getItem('darkMode') === 'true';
+            if (prefersDark) document.body.classList.add('dark');
+            darkToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const isDark = document.body.classList.contains('dark');
+                localStorage.setItem('darkMode', isDark);
+                if (!settings.display) settings.display = {};
+                settings.display.darkMode = isDark;
+                saveSettings();
+            });
+
+            // ================== SEARCH FOCUS ==================
+            function handleSearchFocus() {
+                if (window.innerWidth < 768) {
+                    const container = document.getElementById('searchContainer');
+                    const actions = document.getElementById('headerActions');
+                    const input = document.getElementById('settingSearch');
+                    container.classList.remove('w-10');
+                    container.classList.add('flex-1');
+                    actions.classList.add('hidden');
+                    input.classList.remove('placeholder-transparent');
+                    input.classList.add('placeholder-gray-400');
+                }
+            }
+            function handleSearchBlur() {
+                if (window.innerWidth < 768) {
+                    const input = document.getElementById('settingSearch');
+                    if (input.value === "") {
+                        const container = document.getElementById('searchContainer');
+                        const actions = document.getElementById('headerActions');
+                        container.classList.remove('flex-1');
+                        container.classList.add('w-10');
+                        actions.classList.remove('hidden');
+                        input.classList.add('placeholder-transparent');
+                    }
+                }
+            }
+            window.handleSearchFocus = handleSearchFocus;
+            window.handleSearchBlur = handleSearchBlur;
+
+            // ================== SETTINGS STORAGE ==================
+            let settings = {};
+            let currentCategory = null;
+            let changesMade = false;
+            let editableCategories = ['display', 'notifications']; // only these are editable
+
+            function loadSettings() {
+                const stored = localStorage.getItem('mizana_settings');
+                if (stored) {
+                    settings = JSON.parse(stored);
+                } else {
+                    settings = {
+                        shop: {
+                            businessName: 'Mizana Supermart',
+                            currency: '₦ (Naira)',
+                            tax: '7.5'
+                        },
+                        display: {
+                            defaultView: 'grid',
+                            darkMode: false,
+                            fontScale: 100,
+                            showProductImages: true,
+                            compactView: false
+                        },
+                        inventory: {
+                            lowStockAlert: 5,
+                            autoHideOutOfStock: true
+                        },
+                        subscription: {
+                            plan: 'Pro Monthly',
+                            billingDate: 'Feb 20, 2026'
+                        },
+                        notifications: {
+                            emailReports: true,
+                            pushAlerts: false
+                        },
+                        staff: {
+                            activeRole: 'Administrator',
+                            requirePin: true
+                        }
+                    };
+                }
+                // Ensure new display fields exist
+                if (!settings.display) settings.display = {};
+                if (settings.display.fontScale === undefined) settings.display.fontScale = 100;
+                if (settings.display.showProductImages === undefined) settings.display.showProductImages = true;
+                if (settings.display.compactView === undefined) settings.display.compactView = false;
+                settings.display.darkMode = document.body.classList.contains('dark');
+            }
+
+            function saveSettings() {
+                localStorage.setItem('mizana_settings', JSON.stringify(settings));
+            }
+
+            // ================== SEARCH FILTER ==================
+            function filterSettings() {
+                const query = document.getElementById('settingSearch').value.toLowerCase();
+                const cards = document.querySelectorAll('[data-name]');
+                let hasResults = false;
+                cards.forEach(card => {
+                    const keywords = card.getAttribute('data-name');
+                    if (keywords.includes(query)) {
+                        card.classList.remove('hidden-item');
+                        hasResults = true;
+                    } else {
+                        card.classList.add('hidden-item');
+                    }
+                });
+                document.getElementById('noResults').classList.toggle('hidden', hasResults);
+            }
+            document.getElementById('settingSearch').addEventListener('input', filterSettings);
+
+            // ================== PROFIT CALCULATION ==================
+            function calculateTotalProfit() {
+                const products = JSON.parse(localStorage.getItem('products') || '[]');
+                const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+                let totalProfit = 0;
+                transactions.forEach(t => {
+                    if (t.items && Array.isArray(t.items)) {
+                        t.items.forEach(item => {
+                            const product = products.find(p => p.id == item.id);
+                            if (product && product.buyingPrice !== undefined) {
+                                const profitPerUnit = item.price - product.buyingPrice;
+                                totalProfit += profitPerUnit * item.quantity;
+                            }
+                        });
+                    }
+                });
+                return totalProfit;
+            }
+
+            // ================== DETAIL CONFIGS ==================
+            const detailConfigs = {
+                shop: {
+                    title: "Shop Profile",
+                    editable: false,
+                    items: [
+                        { label: "Business Name", key: "businessName", type: "text", default: "Mizana Supermart" },
+                        { label: "Currency Symbol", key: "currency", type: "text", default: "₦ (Naira)" },
+                        { label: "Tax Percentage (%)", key: "tax", type: "text", default: "7.5", desc: "VAT or sales tax" }
+                    ]
+                },
+                display: {
+                    title: "Display & View",
+                    editable: true,
+                    items: [
+                        { label: "Default Shop View", key: "defaultView", type: "select", default: "grid", options: ["grid", "list"], desc: "Grid or List" },
+                        { label: "Dark Mode", key: "darkMode", type: "toggle", default: false, desc: "Enable dark theme (synced)" },
+                        { label: "Font Scaling", key: "fontScale", type: "range", default: 100, min: 80, max: 120, step: 5, desc: "Adjust text size (%)" },
+                        { label: "Show Product Images", key: "showProductImages", type: "toggle", default: true, desc: "Display images in shop/inventory" },
+                        { label: "Compact View", key: "compactView", type: "toggle", default: false, desc: "Denser layout, less padding" }
+                    ]
+                },
+                inventory: {
+                    title: "Inventory Rules",
+                    editable: false,
+                    items: [
+                        { label: "Low Stock Alert Threshold", key: "lowStockAlert", type: "text", default: 5, desc: "Units" },
+                        { label: "Auto-hide Out of Stock", key: "autoHideOutOfStock", type: "toggle", default: true }
+                    ]
+                },
+                subscription: {
+                    title: "Subscription",
+                    editable: false,
+                    items: [
+                        { label: "Current Plan", key: "plan", type: "text", default: "Pro Monthly" },
+                        { label: "Billing Cycle", key: "billingDate", type: "text", default: "Feb 20, 2026" }
+                    ]
+                },
+                notifications: {
+                    title: "Notifications",
+                    editable: true,
+                    items: [
+                        { label: "Email Reports", key: "emailReports", type: "toggle", default: true },
+                        { label: "Push Alerts", key: "pushAlerts", type: "toggle", default: false }
+                    ]
+                },
+                staff: {
+                    title: "Staff Mode",
+                    editable: false,
+                    items: [
+                        { label: "Active Role", key: "activeRole", type: "text", default: "Administrator" },
+                        { label: "Require PIN", key: "requirePin", type: "toggle", default: true }
+                    ]
+                }
+            };
+
+            // ================== OPEN DETAIL ==================
+            function openDetail(categoryKey) {
+                currentCategory = categoryKey;
+                const config = detailConfigs[categoryKey];
+                if (!config) return;
+
+                document.getElementById('detailTitle').innerText = config.title;
+
+                const content = document.getElementById('detailContent');
+                const isEditable = config.editable && editableCategories.includes(categoryKey);
+
+                // Generate HTML
+                let html = '';
+                config.items.forEach(item => {
+                    const itemKey = item.key;
+                    let currentValue = settings[categoryKey]?.[itemKey] ?? item.default;
+
+                    if (item.type === 'toggle') {
+                        const disabled = !isEditable ? 'opacity-50 pointer-events-none' : '';
+                        html += `
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl flex justify-between items-center shadow-sm">
+                                <div class="flex-1">
+                                    <p class="font-medium text-sm dark:text-white">${item.label}</p>
+                                    ${item.desc ? `<p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">${item.desc}</p>` : ''}
+                                </div>
+                                <div class="relative inline-block w-10 h-5 rounded-full cursor-pointer ${currentValue ? 'bg-brand-accent' : 'bg-gray-300 dark:bg-gray-600'} ${disabled}" 
+                                     onclick="if(${isEditable}) toggleSetting('${categoryKey}', '${itemKey}')">
+                                    <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${currentValue ? 'translate-x-5' : ''}"></div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (item.type === 'select') {
+                        const disabled = !isEditable ? 'disabled' : '';
+                        html += `
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+                                <p class="font-medium text-sm dark:text-white mb-2">${item.label}</p>
+                                <select ${disabled} onchange="if(${isEditable}) valueChanged('${categoryKey}', '${itemKey}', this.value)" 
+                                        class="w-full bg-gray-100 dark:bg-gray-700 border-none rounded-xl p-3 text-sm dark:text-white">
+                                    ${item.options.map(opt => 
+                                        `<option value="${opt}" ${currentValue === opt ? 'selected' : ''}>${opt}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                        `;
+                    } else if (item.type === 'range') {
+                        const disabled = !isEditable ? 'opacity-50 pointer-events-none' : '';
+                        html += `
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+                                <div class="flex justify-between mb-2">
+                                    <p class="font-medium text-sm dark:text-white">${item.label}</p>
+                                    <span class="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full" id="range-${itemKey}">${currentValue}%</span>
+                                </div>
+                                <input type="range" min="${item.min}" max="${item.max}" step="${item.step}" value="${currentValue}" 
+                                       class="w-full accent-brand-accent ${disabled}" 
+                                       oninput="document.getElementById('range-${itemKey}').innerText = this.value + '%'; if(${isEditable}) valueChanged('${categoryKey}', '${itemKey}', this.value)">
+                                ${item.desc ? `<p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${item.desc}</p>` : ''}
+                            </div>
+                        `;
+                    } else { // text input
+                        const disabled = !isEditable ? 'disabled' : '';
+                        html += `
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+                                <p class="font-medium text-sm dark:text-white mb-2">${item.label}</p>
+                                <input type="text" value="${currentValue}" ${disabled}
+                                       onchange="if(${isEditable}) valueChanged('${categoryKey}', '${itemKey}', this.value)"
+                                       class="w-full bg-gray-100 dark:bg-gray-700 border-none rounded-xl p-3 text-sm dark:text-white">
+                                ${item.desc ? `<p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${item.desc}</p>` : ''}
+                            </div>
+                        `;
+                    }
+                });
+
+                // Add profit display for inventory
+                if (categoryKey === 'inventory') {
+                    const profit = calculateTotalProfit();
+                    html += `
+                        <div class="bg-gradient-to-r from-green-500 to-green-600 p-5 rounded-xl shadow-lg mt-4">
+                            <p class="text-white text-xs uppercase tracking-wider font-bold">Total Profit (All Time)</p>
+                            <p class="text-white text-3xl font-black mt-1">₦${profit.toLocaleString()}</p>
+                            <p class="text-green-100 text-[10px] mt-2">Based on transactions and buying prices</p>
+                        </div>
+                    `;
+                }
+
+                content.innerHTML = html;
+
+                // Hide save bar if not editable
+                if (isEditable) {
+                    document.getElementById('saveBar').classList.remove('show');
+                    changesMade = false;
+                } else {
+                    document.getElementById('saveBar').classList.remove('show');
+                }
+
+                document.getElementById('detailPane').classList.remove('translate-x-full');
+            }
+            window.openDetail = openDetail;
+
+            // ================== VALUE CHANGED ==================
+            function valueChanged(category, key, newValue) {
+                if (!settings[category]) settings[category] = {};
+                settings[category][key] = newValue;
+                changesMade = true;
+                document.getElementById('saveBar').classList.add('show');
+            }
+            window.valueChanged = valueChanged;
+
+            function toggleSetting(category, key) {
+                const current = settings[category]?.[key] ?? false;
+                const newVal = !current;
+                if (!settings[category]) settings[category] = {};
+                settings[category][key] = newVal;
+                // Update UI immediately
+                const toggleDiv = event.currentTarget;
+                const knob = toggleDiv.querySelector('div');
+                if (newVal) {
+                    toggleDiv.classList.add('bg-brand-accent');
+                    toggleDiv.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+                    knob.classList.add('translate-x-5');
+                } else {
+                    toggleDiv.classList.remove('bg-brand-accent');
+                    toggleDiv.classList.add('bg-gray-300', 'dark:bg-gray-600');
+                    knob.classList.remove('translate-x-5');
+                }
+                changesMade = true;
+                document.getElementById('saveBar').classList.add('show');
+                // Special: dark mode
+                if (category === 'display' && key === 'darkMode') {
+                    document.body.classList.toggle('dark', newVal);
+                    localStorage.setItem('darkMode', newVal);
+                }
+            }
+            window.toggleSetting = toggleSetting;
+
+            function saveChanges() {
+                saveSettings();
+                changesMade = false;
+                document.getElementById('saveBar').classList.remove('show');
+                // Show a simple toast
+                alert('Settings saved!');
+            }
+            window.saveChanges = saveChanges;
+
+            function closeDetail() {
+                if (changesMade) {
+                    if (confirm('You have unsaved changes. Discard them?')) {
+                        document.getElementById('detailPane').classList.add('translate-x-full');
+                        loadSettings(); // reload to discard
+                    }
+                } else {
+                    document.getElementById('detailPane').classList.add('translate-x-full');
+                }
+            }
+            window.closeDetail = closeDetail;
+
+            // ================== INIT ==================
+            loadSettings();
+            document.getElementById('noResults').classList.add('hidden');
+        })();
+    </script>
+</body>
+</html>

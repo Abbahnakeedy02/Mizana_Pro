@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { main: '#132B77', accent: '#0A89A4' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .input-field {
+            width: 100%;
+            background-color: #f3f4f6;
+            border: 2px solid transparent;
+            border-radius: 1rem;
+            padding: 0.75rem 1rem;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        .dark .input-field {
+            background-color: rgba(55, 65, 81, 0.5);
+            color: #0A89A4;
+        }
+        .input-field:focus { border-color: #0A89A4; }
+        .input-field:disabled { opacity: 0.6; }
+        .edit-overlay { background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); }
+        .toggle-switch {
+            width: 2.5rem;
+            height: 1.25rem;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .toggle-switch.active { background-color: #0A89A4; }
+        .toggle-knob {
+            width: 1rem;
+            height: 1rem;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 0.125rem;
+            left: 0.125rem;
+            transition: transform 0.2s;
+        }
+        .toggle-switch.active .toggle-knob { transform: translateX(1.25rem); }
+        /* Modal backdrop */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; border-radius: 2rem; padding: 1.5rem; }
+        .dark .modal-content { background: #1f2937; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Profile</h1>
+            </div>
+            <!-- Role‑based edit button (only owners see full edit) -->
+            <button id="editBtn" onclick="ui.toggleEdit()" class="text-brand-accent font-black text-xs uppercase tracking-widest hover:opacity-80 transition hidden">
+                Edit
+            </button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-xl mx-auto pb-24">
+        <!-- Role‑based content will be injected via JavaScript -->
+        <div id="profileContent"></div>
+    </main>
+
+    <!-- Save Bar (appears in edit mode) -->
+    <div id="saveBar" class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-800 translate-y-full transition-transform duration-300">
+        <button onclick="ui.saveChanges()" class="w-full bg-brand-accent text-brand-main py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-opacity-90 transition">
+            SAVE CHANGES
+        </button>
+    </div>
+
+    <!-- Notification Modal (only for owners) -->
+    <div id="notificationModal" class="modal" onclick="if(event.target === this) ui.closeNotificationModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-black dark:text-white">Notification Preferences</h2>
+                <button onclick="ui.closeNotificationModal()" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <i class="fas fa-times text-gray-400"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mb-6">Configure which events trigger alerts and how you receive them.</p>
+
+            <div class="space-y-6" id="notificationSettings"></div>
+
+            <div class="mt-6 flex gap-2">
+                <button onclick="ui.saveNotificationSettings()" class="flex-1 bg-brand-accent text-brand-main py-3 rounded-xl font-bold hover:bg-opacity-90 transition">Save</button>
+                <button onclick="ui.closeNotificationModal()" class="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN Change Modal (for all users) -->
+    <div id="pinModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden" onclick="if(event.target === this) ui.closePinModal()">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-xl" onclick="event.stopPropagation()">
+            <h3 class="text-lg font-black mb-4 dark:text-white">Change PIN</h3>
+            <div class="space-y-4">
+                <div><label class="text-xs font-bold dark:text-gray-300">Current PIN</label><input type="password" id="currentPin" maxlength="4" inputmode="numeric" pattern="\d*" class="input-field mt-1" placeholder="••••"></div>
+                <div><label class="text-xs font-bold dark:text-gray-300">New PIN</label><input type="password" id="newPin" maxlength="4" inputmode="numeric" pattern="\d*" class="input-field mt-1" placeholder="••••"></div>
+                <div><label class="text-xs font-bold dark:text-gray-300">Confirm New PIN</label><input type="password" id="confirmPin" maxlength="4" inputmode="numeric" pattern="\d*" class="input-field mt-1" placeholder="••••"></div>
+                <div id="pinError" class="text-red-500 text-xs hidden"></div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="ui.updatePin()" class="flex-1 bg-brand-accent text-brand-main py-3 rounded-xl font-bold hover:bg-opacity-90 transition">Update</button>
+                    <button onclick="ui.closePinModal()" class="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg z-50 hidden"></div>
+
+    <script>
+        // Simple hash (for PIN)
+        async function simpleHash(message) {
+            const msgUint8 = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Dark mode
+        (function() {
+            const prefersDark = localStorage.getItem('darkMode') === 'true';
+            if (prefersDark) document.body.classList.add('dark');
+        })();
+
+        // ================== Data Service ==================
+        const dataService = (function() {
+            let settings = {};
+            let userRole = localStorage.getItem('userRole') || 'staff'; // default staff
+
+            function loadSettings() {
+                const stored = localStorage.getItem('mizana_settings');
+                if (stored) {
+                    settings = JSON.parse(stored);
+                } else {
+                    settings = {
+                        shop: { businessName: 'Mizan General Store', currency: 'NGN', vat: 7.5 },
+                        brand: { primary: '#132B77', accent: '#0A89A4' },
+                        profitMethod: 'fifo',
+                        subscription: { plan: 'Pro Monthly', billingDate: 'Feb 20, 2026' },
+                        notifications: {
+                            lowStock: { enabled: true, email: true, sms: false, push: false, threshold: 5 },
+                            expiry: { enabled: true, email: true, sms: false, days: 7 },
+                            priceChange: { enabled: true, email: true, sms: false, discountThreshold: 10 },
+                            damage: { enabled: true, email: true, sms: false },
+                            voided: { enabled: true, email: true, sms: false },
+                            debtReview: { enabled: true, email: true, sms: false },
+                            businessHours: { enabled: true, email: true, sms: false, start: '09:00', end: '21:00' },
+                            reports: { enabled: true, email: true, frequency: 'daily', time: '18:00' }
+                        }
+                    };
+                }
+                return settings;
+            }
+
+            function saveSettings(newSettings) {
+                settings = { ...settings, ...newSettings };
+                localStorage.setItem('mizana_settings', JSON.stringify(settings));
+            }
+
+            // Staff data (mock) – in real app would come from Firestore
+            function getStaffProfile() {
+                return {
+                    name: "John Staff",
+                    email: "john.staff@mizana.pro",
+                    phone: "+234 812 345 6789",
+                    role: "Cashier",
+                    employeeId: "EMP-12345"
+                };
+            }
+
+            return {
+                loadSettings,
+                saveSettings,
+                getStaffProfile,
+                getUserRole: () => userRole,
+                setUserRole: (role) => { userRole = role; localStorage.setItem('userRole', role); }
+            };
+        })();
+
+        // ================== UI Controller ==================
+        const ui = (function() {
+            let isEditing = false;
+            let originalSettings = {};
+            let role = dataService.getUserRole();
+
+            // DOM elements
+            const profileContent = document.getElementById('profileContent');
+            const editBtn = document.getElementById('editBtn');
+            const saveBar = document.getElementById('saveBar');
+            const toast = document.getElementById('toast');
+            const notificationModal = document.getElementById('notificationModal');
+            const pinModal = document.getElementById('pinModal');
+            const pinError = document.getElementById('pinError');
+            const currentPin = document.getElementById('currentPin');
+            const newPin = document.getElementById('newPin');
+            const confirmPin = document.getElementById('confirmPin');
+
+            function showToast(msg, isError = false) {
+                toast.innerText = msg;
+                toast.classList.remove('hidden');
+                toast.style.backgroundColor = isError ? '#dc2626' : '#1f2937';
+                setTimeout(() => toast.classList.add('hidden'), 2000);
+            }
+
+            function setToggle(el, state) {
+                if (state) el.classList.add('active');
+                else el.classList.remove('active');
+            }
+            function getToggleState(el) {
+                return el.classList.contains('active');
+            }
+
+            // Render profile based on role
+            function renderProfile() {
+                if (role === 'owner') {
+                    renderOwnerProfile();
+                    editBtn.classList.remove('hidden');
+                } else {
+                    renderStaffProfile();
+                    editBtn.classList.add('hidden'); // staff cannot edit business profile
+                }
+            }
+
+            function renderOwnerProfile() {
+                const settings = dataService.loadSettings();
+                profileContent.innerHTML = `
+                    <!-- Business Logo -->
+                    <div class="flex flex-col items-center py-6">
+                        <div class="relative group">
+                            <div class="w-28 h-28 bg-gray-100 dark:bg-gray-800 rounded-3xl border-4 border-white dark:border-gray-800 shadow-xl flex items-center justify-center overflow-hidden">
+                                <img id="logoPreview" src="https://via.placeholder.com/100?text=Logo" class="w-full h-full object-cover" alt="Business Logo">
+                                <div id="cameraIcon" class="hidden absolute inset-0 edit-overlay items-center justify-center cursor-pointer" onclick="document.getElementById('logoUpload').click()">
+                                    <i class="fas fa-camera text-2xl text-white"></i>
+                                </div>
+                            </div>
+                            <input type="file" id="logoUpload" accept="image/*" class="hidden" onchange="ui.handleLogoUpload(event)">
+                        </div>
+                        <h2 class="mt-4 text-xl font-black dark:text-white">${settings.shop?.businessName || 'Business Name'}</h2>
+                    </div>
+
+                    <!-- Business Details -->
+                    <section class="space-y-4">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Business Information</label>
+                        <div class="space-y-2">
+                            <p class="text-xs font-bold px-1 dark:text-gray-300">Store Name</p>
+                            <input type="text" id="storeName" value="${settings.shop?.businessName || ''}" disabled class="input-field">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <p class="text-xs font-bold px-1 dark:text-gray-300">Currency</p>
+                                <select id="currency" disabled class="input-field">
+                                    <option value="NGN" ${settings.shop?.currency === 'NGN' ? 'selected' : ''}>₦ NGN</option>
+                                    <option value="USD" ${settings.shop?.currency === 'USD' ? 'selected' : ''}>$ USD</option>
+                                    <option value="GBP" ${settings.shop?.currency === 'GBP' ? 'selected' : ''}>£ GBP</option>
+                                    <option value="EUR" ${settings.shop?.currency === 'EUR' ? 'selected' : ''}>€ EUR</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-xs font-bold px-1 dark:text-gray-300">VAT Rate (%)</p>
+                                <input type="number" id="vatRate" value="${settings.shop?.vat || 7.5}" step="0.1" min="0" max="100" disabled class="input-field">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Brand Colors -->
+                    <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Brand Colors</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <p class="text-xs font-bold px-1 dark:text-gray-300">Primary</p>
+                                <div class="flex gap-2">
+                                    <input type="color" id="primaryColor" value="${settings.brand?.primary || '#132B77'}" disabled class="w-10 h-10 p-1 rounded-full border-2 border-gray-200 dark:border-gray-700">
+                                    <input type="text" id="primaryColorText" value="${settings.brand?.primary || '#132B77'}" disabled class="input-field flex-1">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-xs font-bold px-1 dark:text-gray-300">Accent</p>
+                                <div class="flex gap-2">
+                                    <input type="color" id="accentColor" value="${settings.brand?.accent || '#0A89A4'}" disabled class="w-10 h-10 p-1 rounded-full border-2 border-gray-200 dark:border-gray-700">
+                                    <input type="text" id="accentColorText" value="${settings.brand?.accent || '#0A89A4'}" disabled class="input-field flex-1">
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Profit Method -->
+                    <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Profit Method</label>
+                        <select id="profitMethod" disabled class="input-field">
+                            <option value="fifo" ${settings.profitMethod === 'fifo' ? 'selected' : ''}>FIFO</option>
+                            <option value="lifo" ${settings.profitMethod === 'lifo' ? 'selected' : ''}>LIFO</option>
+                            <option value="average" ${settings.profitMethod === 'average' ? 'selected' : ''}>Weighted Average</option>
+                        </select>
+                    </section>
+
+                    <!-- Staff List (mock) -->
+                    <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Staff</label>
+                            <button type="button" class="text-[10px] font-black text-brand-accent uppercase" onclick="alert('Staff management coming soon')">+ Add</button>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700 flex items-center justify-between shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-brand-accent/20 text-brand-accent rounded-full flex items-center justify-center font-black text-xs">MA</div>
+                                <div>
+                                    <p class="text-sm font-bold dark:text-white">Musa Adamu</p>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase">Cashier</p>
+                                </div>
+                            </div>
+                            <button class="text-xs font-black text-brand-main dark:text-gray-400 p-2">Manage</button>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700 flex items-center justify-between shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-brand-accent/20 text-brand-accent rounded-full flex items-center justify-center font-black text-xs">FA</div>
+                                <div>
+                                    <p class="text-sm font-bold dark:text-white">Fatima Bello</p>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase">Manager</p>
+                                </div>
+                            </div>
+                            <button class="text-xs font-black text-brand-main dark:text-gray-400 p-2">Manage</button>
+                        </div>
+                    </section>
+
+                    <!-- Notification Button -->
+                    <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                        <button type="button" onclick="ui.openNotificationModal()" class="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border dark:border-gray-700 hover:border-brand-accent/50 transition">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-bell text-brand-accent"></i>
+                                <span class="text-sm font-bold dark:text-white">Notification Preferences</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                        </button>
+                    </section>
+
+                    <!-- Subscription -->
+                    <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Subscription</label>
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700 space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-bold dark:text-gray-300">Plan</span>
+                                <span class="font-bold text-brand-accent">${settings.subscription?.plan || 'Pro Monthly'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs font-bold dark:text-gray-300">Billing Date</span>
+                                <span class="font-bold">${settings.subscription?.billingDate || 'Feb 20, 2026'}</span>
+                            </div>
+                            <button type="button" onclick="window.location.href='subscription.html'" class="w-full bg-brand-accent/10 text-brand-accent py-2 rounded-xl text-xs font-bold hover:bg-brand-accent/20 transition">Manage</button>
+                        </div>
+                    </section>
+                `;
+
+                // After injecting HTML, re‑attach event listeners for color sync
+                document.getElementById('primaryColor')?.addEventListener('input', function() {
+                    document.getElementById('primaryColorText').value = this.value;
+                });
+                document.getElementById('primaryColorText')?.addEventListener('input', function() {
+                    document.getElementById('primaryColor').value = this.value;
+                });
+                document.getElementById('accentColor')?.addEventListener('input', function() {
+                    document.getElementById('accentColorText').value = this.value;
+                });
+                document.getElementById('accentColorText')?.addEventListener('input', function() {
+                    document.getElementById('accentColor').value = this.value;
+                });
+            }
+
+            function renderStaffProfile() {
+                const staff = dataService.getStaffProfile();
+                profileContent.innerHTML = `
+                    <!-- Staff Avatar -->
+                    <div class="flex flex-col items-center py-6">
+                        <div class="w-28 h-28 bg-gray-100 dark:bg-gray-800 rounded-full border-4 border-white dark:border-gray-800 shadow-xl flex items-center justify-center overflow-hidden">
+                            <span class="text-5xl text-gray-500">👤</span>
+                        </div>
+                        <h2 class="mt-4 text-xl font-black dark:text-white">${staff.name}</h2>
+                        <p class="text-xs text-gray-500 font-medium">${staff.role} · ID: ${staff.employeeId}</p>
+                    </div>
+
+                    <!-- Personal Details -->
+                    <section class="space-y-4">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Personal Information</label>
+                        <div class="space-y-2">
+                            <p class="text-xs font-bold px-1 dark:text-gray-300">Full Name</p>
+                            <input type="text" id="staffName" value="${staff.name}" disabled class="input-field">
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-xs font-bold px-1 dark:text-gray-300">Email</p>
+                            <input type="email" id="staffEmail" value="${staff.email}" disabled class="input-field">
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-xs font-bold px-1 dark:text-gray-300">Phone</p>
+                            <input type="tel" id="staffPhone" value="${staff.phone}" disabled class="input-field">
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-xs font-bold px-1 dark:text-gray-300">Role</p>
+                            <input type="text" id="staffRole" value="${staff.role}" disabled class="input-field">
+                        </div>
+                    </section>
+
+                    <!-- Security -->
+                    <section class="space-y-4 pt-4 border-t dark:border-gray-800">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Security</label>
+                        <button type="button" onclick="ui.openPinModal()" class="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border dark:border-gray-700 hover:border-brand-accent/50 transition">
+                            <div class="flex items-center gap-3"><i class="fas fa-key text-brand-accent"></i><span class="text-sm font-bold dark:text-white">Change PIN</span></div>
+                            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                        </button>
+                    </section>
+                `;
+            }
+
+            // Edit mode for owner
+            function toggleEdit() {
+                if (role !== 'owner') return;
+                isEditing = !isEditing;
+                const inputs = document.querySelectorAll('.input-field');
+                const cameraIcon = document.getElementById('cameraIcon');
+                if (isEditing) {
+                    originalSettings = JSON.parse(JSON.stringify(dataService.loadSettings()));
+                    editBtn.innerText = "Cancel";
+                    editBtn.classList.replace('text-brand-accent', 'text-gray-400');
+                    saveBar.classList.remove('translate-y-full');
+                    if (cameraIcon) {
+                        cameraIcon.classList.remove('hidden');
+                        cameraIcon.classList.add('flex');
+                    }
+                    inputs.forEach(i => i.disabled = false);
+                } else {
+                    // Cancel: restore original
+                    restoreOriginal();
+                    editBtn.innerText = "Edit";
+                    editBtn.classList.replace('text-gray-400', 'text-brand-accent');
+                    saveBar.classList.add('translate-y-full');
+                    if (cameraIcon) {
+                        cameraIcon.classList.add('hidden');
+                        cameraIcon.classList.remove('flex');
+                    }
+                    inputs.forEach(i => i.disabled = true);
+                }
+            }
+
+            function restoreOriginal() {
+                const settings = originalSettings;
+                document.getElementById('storeName').value = settings.shop?.businessName || '';
+                document.getElementById('currency').value = settings.shop?.currency || 'NGN';
+                document.getElementById('vatRate').value = settings.shop?.vat || 7.5;
+                document.getElementById('primaryColor').value = settings.brand?.primary || '#132B77';
+                document.getElementById('primaryColorText').value = settings.brand?.primary || '#132B77';
+                document.getElementById('accentColor').value = settings.brand?.accent || '#0A89A4';
+                document.getElementById('accentColorText').value = settings.brand?.accent || '#0A89A4';
+                document.getElementById('profitMethod').value = settings.profitMethod || 'fifo';
+            }
+
+            function saveChanges() {
+                if (role !== 'owner') return;
+                const updated = {
+                    shop: {
+                        businessName: document.getElementById('storeName').value,
+                        currency: document.getElementById('currency').value,
+                        vat: parseFloat(document.getElementById('vatRate').value) || 7.5
+                    },
+                    brand: {
+                        primary: document.getElementById('primaryColor').value,
+                        accent: document.getElementById('accentColor').value
+                    },
+                    profitMethod: document.getElementById('profitMethod').value,
+                    subscription: dataService.loadSettings().subscription // preserve
+                };
+                dataService.saveSettings(updated);
+                showToast('Business profile updated');
+                toggleEdit(); // exit edit mode
+            }
+
+            // Logo upload
+            function handleLogoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('logoPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Notification modal (owner only)
+            function openNotificationModal() {
+                if (role !== 'owner') return;
+                loadNotificationSettings();
+                notificationModal.classList.add('active');
+            }
+            function closeNotificationModal() {
+                notificationModal.classList.remove('active');
+            }
+
+            function loadNotificationSettings() {
+                const settings = dataService.loadSettings();
+                const n = settings.notifications;
+                const container = document.getElementById('notificationSettings');
+                // Build the HTML for notifications (same as before, but we'll fill toggles later)
+                container.innerHTML = `
+                    <!-- Low Stock -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold dark:text-white">Low Stock</span>
+                            <div class="toggle-switch" id="notifyLowStockToggle"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <div class="toggle-switch small" id="notifyLowStockEmail"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                                <div class="toggle-switch small" id="notifyLowStockSms"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Push</span>
+                                <div class="toggle-switch small" id="notifyLowStockPush"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="mt-2">
+                                <label class="text-xs text-gray-500">Threshold (units)</label>
+                                <input type="number" id="lowStockThreshold" value="${n.lowStock.threshold || 5}" class="input-field mt-1">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Expiry -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold dark:text-white">Expiry Warning</span>
+                            <div class="toggle-switch" id="notifyExpiryToggle"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <div class="toggle-switch small" id="notifyExpiryEmail"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                                <div class="toggle-switch small" id="notifyExpirySms"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="mt-2">
+                                <label class="text-xs text-gray-500">Days before</label>
+                                <input type="number" id="expiryDays" value="${n.expiry.days || 7}" class="input-field mt-1">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Price Change -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold dark:text-white">Price Change</span>
+                            <div class="toggle-switch" id="notifyPriceChangeToggle"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <div class="toggle-switch small" id="notifyPriceChangeEmail"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                                <div class="toggle-switch small" id="notifyPriceChangeSms"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="mt-2">
+                                <label class="text-xs text-gray-500">Discount threshold (%)</label>
+                                <input type="number" id="discountThreshold" value="${n.priceChange.discountThreshold || 10}" class="input-field mt-1">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Damage -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold dark:text-white">Damage / Expenses</span>
+                            <div class="toggle-switch" id="notifyDamageToggle"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <div class="toggle-switch small" id="notifyDamageEmail"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                                <div class="toggle-switch small" id="notifyDamageSms"><div class="toggle-knob"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Voided Sale -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold dark:text-white">Voided Sale</span>
+                            <div class="toggle-switch" id="notifyVoidedToggle"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <div class="toggle-switch small" id="notifyVoidedEmail"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                                <div class="toggle-switch small" id="notifyVoidedSms"><div class="toggle-knob"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Debt Review -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold dark:text-white">Debt Review</span>
+                            <div class="toggle-switch" id="notifyDebtReviewToggle"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <div class="toggle-switch small" id="notifyDebtReviewEmail"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                                <div class="toggle-switch small" id="notifyDebtReviewSms"><div class="toggle-knob"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Business Hours -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold dark:text-white">Business Hours Alert</span>
+                            <div class="toggle-switch" id="notifyBusinessHoursToggle"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="time" id="businessStart" value="${n.businessHours.start || '09:00'}" class="input-field">
+                                <input type="time" id="businessEnd" value="${n.businessHours.end || '21:00'}" class="input-field">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <div class="toggle-switch small" id="notifyBusinessHoursEmail"><div class="toggle-knob"></div></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">SMS</span>
+                                <div class="toggle-switch small" id="notifyBusinessHoursSms"><div class="toggle-knob"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Scheduled Reports -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold dark:text-white">Scheduled Reports</span>
+                            <div class="toggle-switch" id="notifyReportsToggle"><div class="toggle-knob"></div></div>
+                        </div>
+                        <div class="pl-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700">
+                            <select id="reportFrequency" class="input-field">
+                                <option value="daily" ${n.reports.frequency === 'daily' ? 'selected' : ''}>Daily</option>
+                                <option value="weekly" ${n.reports.frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
+                                <option value="monthly" ${n.reports.frequency === 'monthly' ? 'selected' : ''}>Monthly</option>
+                            </select>
+                            <input type="time" id="reportTime" value="${n.reports.time || '18:00'}" class="input-field">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <div class="toggle-switch small" id="notifyReportsEmail"><div class="toggle-knob"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Now set toggle states
+                setToggle(document.getElementById('notifyLowStockToggle'), n.lowStock.enabled);
+                setToggle(document.getElementById('notifyLowStockEmail'), n.lowStock.email);
+                setToggle(document.getElementById('notifyLowStockSms'), n.lowStock.sms);
+                setToggle(document.getElementById('notifyLowStockPush'), n.lowStock.push);
+
+                setToggle(document.getElementById('notifyExpiryToggle'), n.expiry.enabled);
+                setToggle(document.getElementById('notifyExpiryEmail'), n.expiry.email);
+                setToggle(document.getElementById('notifyExpirySms'), n.expiry.sms);
+
+                setToggle(document.getElementById('notifyPriceChangeToggle'), n.priceChange.enabled);
+                setToggle(document.getElementById('notifyPriceChangeEmail'), n.priceChange.email);
+                setToggle(document.getElementById('notifyPriceChangeSms'), n.priceChange.sms);
+
+                setToggle(document.getElementById('notifyDamageToggle'), n.damage.enabled);
+                setToggle(document.getElementById('notifyDamageEmail'), n.damage.email);
+                setToggle(document.getElementById('notifyDamageSms'), n.damage.sms);
+
+                setToggle(document.getElementById('notifyVoidedToggle'), n.voided.enabled);
+                setToggle(document.getElementById('notifyVoidedEmail'), n.voided.email);
+                setToggle(document.getElementById('notifyVoidedSms'), n.voided.sms);
+
+                setToggle(document.getElementById('notifyDebtReviewToggle'), n.debtReview.enabled);
+                setToggle(document.getElementById('notifyDebtReviewEmail'), n.debtReview.email);
+                setToggle(document.getElementById('notifyDebtReviewSms'), n.debtReview.sms);
+
+                setToggle(document.getElementById('notifyBusinessHoursToggle'), n.businessHours.enabled);
+                setToggle(document.getElementById('notifyBusinessHoursEmail'), n.businessHours.email);
+                setToggle(document.getElementById('notifyBusinessHoursSms'), n.businessHours.sms);
+
+                setToggle(document.getElementById('notifyReportsToggle'), n.reports.enabled);
+                setToggle(document.getElementById('notifyReportsEmail'), n.reports.email);
+
+                // Attach click handlers to all toggles in modal
+                document.querySelectorAll('#notificationSettings .toggle-switch').forEach(t => {
+                    t.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        this.classList.toggle('active');
+                    });
+                });
+            }
+
+            function saveNotificationSettings() {
+                const n = {
+                    lowStock: {
+                        enabled: getToggleState(document.getElementById('notifyLowStockToggle')),
+                        email: getToggleState(document.getElementById('notifyLowStockEmail')),
+                        sms: getToggleState(document.getElementById('notifyLowStockSms')),
+                        push: getToggleState(document.getElementById('notifyLowStockPush')),
+                        threshold: parseInt(document.getElementById('lowStockThreshold').value) || 5
+                    },
+                    expiry: {
+                        enabled: getToggleState(document.getElementById('notifyExpiryToggle')),
+                        email: getToggleState(document.getElementById('notifyExpiryEmail')),
+                        sms: getToggleState(document.getElementById('notifyExpirySms')),
+                        days: parseInt(document.getElementById('expiryDays').value) || 7
+                    },
+                    priceChange: {
+                        enabled: getToggleState(document.getElementById('notifyPriceChangeToggle')),
+                        email: getToggleState(document.getElementById('notifyPriceChangeEmail')),
+                        sms: getToggleState(document.getElementById('notifyPriceChangeSms')),
+                        discountThreshold: parseInt(document.getElementById('discountThreshold').value) || 10
+                    },
+                    damage: {
+                        enabled: getToggleState(document.getElementById('notifyDamageToggle')),
+                        email: getToggleState(document.getElementById('notifyDamageEmail')),
+                        sms: getToggleState(document.getElementById('notifyDamageSms'))
+                    },
+                    voided: {
+                        enabled: getToggleState(document.getElementById('notifyVoidedToggle')),
+                        email: getToggleState(document.getElementById('notifyVoidedEmail')),
+                        sms: getToggleState(document.getElementById('notifyVoidedSms'))
+                    },
+                    debtReview: {
+                        enabled: getToggleState(document.getElementById('notifyDebtReviewToggle')),
+                        email: getToggleState(document.getElementById('notifyDebtReviewEmail')),
+                        sms: getToggleState(document.getElementById('notifyDebtReviewSms'))
+                    },
+                    businessHours: {
+                        enabled: getToggleState(document.getElementById('notifyBusinessHoursToggle')),
+                        start: document.getElementById('businessStart').value,
+                        end: document.getElementById('businessEnd').value,
+                        email: getToggleState(document.getElementById('notifyBusinessHoursEmail')),
+                        sms: getToggleState(document.getElementById('notifyBusinessHoursSms'))
+                    },
+                    reports: {
+                        enabled: getToggleState(document.getElementById('notifyReportsToggle')),
+                        frequency: document.getElementById('reportFrequency').value,
+                        time: document.getElementById('reportTime').value,
+                        email: getToggleState(document.getElementById('notifyReportsEmail'))
+                    }
+                };
+                const current = dataService.loadSettings();
+                current.notifications = n;
+                dataService.saveSettings(current);
+                showToast('Notification settings saved');
+                closeNotificationModal();
+            }
+
+            // PIN modal (for all users)
+            function openPinModal() { pinModal.classList.remove('hidden'); }
+            function closePinModal() { pinModal.classList.add('hidden'); }
+            async function updatePin() {
+                const cur = document.getElementById('currentPin').value;
+                const newP = document.getElementById('newPin').value;
+                const conf = document.getElementById('confirmPin').value;
+                if (!/^\d{4}$/.test(newP)) {
+                    document.getElementById('pinError').innerText = 'PIN must be exactly 4 digits';
+                    document.getElementById('pinError').classList.remove('hidden'); return;
+                }
+                if (newP !== conf) {
+                    document.getElementById('pinError').innerText = 'PINs do not match';
+                    document.getElementById('pinError').classList.remove('hidden'); return;
+                }
+                // In a real app, verify current PIN against stored hash (from userProfile)
+                // For demo, we skip verification
+                showToast('PIN updated (simulated)');
+                closePinModal();
+            }
+
+            // Logout
+            function logout() {
+                if (confirm('Log out?')) window.location.href = 'login.html';
+            }
+
+            // Expose public methods
+            return {
+                init: renderProfile,
+                toggleEdit,
+                saveChanges,
+                handleLogoUpload,
+                openNotificationModal,
+                closeNotificationModal,
+                saveNotificationSettings,
+                openPinModal,
+                closePinModal,
+                updatePin,
+                logout
+            };
+        })();
+
+        // Initialize on load
+        ui.init();
+    </script>
+</body>
+</html>
