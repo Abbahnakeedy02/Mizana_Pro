@@ -8,7 +8,10 @@
     <link rel="shortcut icon" href="asset/favicon.png" type="image/png">
     <link href="https://unpkg.com/aos@next/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="CSS/landing_page.css">
-    <link rel="stylesheet" href="./src/output.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    
 </head>
 
 <body>
@@ -62,29 +65,29 @@
         </div>
     </section>
     <hr>
-    <section class="about-section">
-        <div data-aos="fade-right">
-            <h5 style="color: var(--brand-main); text-transform: uppercase;">About Mizana</h5>
-            <h2>The best solution for your business growth</h2>
-            <p style="color: var(--gray-600);">Specifically built for the challenges of local shop management.</p>
-        </div>
-
-        <div class="about-grid">
-            <div class="feature-item" data-aos="fade-up" data-aos-delay="100">
-                <span class="check-icon">✓</span>
-                <div><b>Automated Profit</b><br><small>No more manual calculation.</small></div>
-            </div>
-            <div class="feature-item" data-aos="fade-up" data-aos-delay="200">
-                <span class="check-icon">✓</span>
-                <div><b>Unit Breakdown</b><br><small>Package to single item math.</small></div>
-            </div>
-            <div class="feature-item" data-aos="fade-up" data-aos-delay="300">
-                <span class="check-icon">✓</span>
-                <div><b>Staff Ranking</b><br><small>Eliminate theft and errors.</small></div>
-            </div>
-            <div class="feature-item" data-aos="fade-up" data-aos-delay="400">
-                <span class="check-icon">✓</span>
-                <div><b>Offline Mode</b><br><small>Works without 4G/Data.</small></div>
+    <!-- ================== ABOUT FEATURES ================== -->
+    <section class="py-20 bg-brand-bg">
+        <div class="container mx-auto px-4 text-center">
+            <h5 class="text-brand-main uppercase font-bold tracking-wider" data-aos="fade-right">About Mizana</h5>
+            <h2 class="text-3xl md:text-4xl font-bold text-brand-dark mt-2" data-aos="fade-left">The best solution for your business growth</h2>
+            <p class="text-gray-600 mt-4" data-aos="fade-up">Specifically built for the challenges of local shop management.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+                <div class="bg-white rounded-2xl p-6 shadow-md flex items-start gap-4 hover:shadow-lg transition" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-10 h-10 bg-brand-main/10 rounded-full flex items-center justify-center text-brand-main text-xl"><i class="fas fa-chart-line"></i></div>
+                    <div><b class="text-brand-dark">Automated Profit</b><br><small class="text-gray-500">No more manual calculation.</small></div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-md flex items-start gap-4 hover:shadow-lg transition" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-10 h-10 bg-brand-main/10 rounded-full flex items-center justify-center text-brand-main text-xl"><i class="fas fa-cubes"></i></div>
+                    <div><b class="text-brand-dark">Unit Breakdown</b><br><small class="text-gray-500">Package to single item math.</small></div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-md flex items-start gap-4 hover:shadow-lg transition" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-10 h-10 bg-brand-main/10 rounded-full flex items-center justify-center text-brand-main text-xl"><i class="fas fa-chart-simple"></i></div>
+                    <div><b class="text-brand-dark">Staff Ranking</b><br><small class="text-gray-500">Eliminate theft and errors.</small></div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-md flex items-start gap-4 hover:shadow-lg transition" data-aos="fade-up" data-aos-delay="400">
+                    <div class="w-10 h-10 bg-brand-main/10 rounded-full flex items-center justify-center text-brand-main text-xl"><i class="fas fa-wifi"></i></div>
+                    <div><b class="text-brand-dark">Offline Mode</b><br><small class="text-gray-500">Works without 4G/Data.</small></div>
+                </div>
             </div>
         </div>
     </section>
@@ -110,9 +113,7 @@
                     <div class="avatar">🧑🏾</div>
                     <div class="avatar">+5</div>
                 </div>
-                <div class="earnings-badge">
-                    Started Now
-                </div>
+                
             </div>
         </div>
         <!-- 1️⃣ SMART UNIT BREAKDOWN – Nakeed teal -->
@@ -123,33 +124,13 @@
                     many units are in a large package. Enter one "Bag" and watch the app manage the "Cups" for you
                     instantly.</p>
             </div>
-            <div class="feature-image-placeholder">
-                <div class="unit-breakdown">
-                    <div class="package-item">
-                        <div class="package-icon">📦</div>
-                        <div class="package-label">1 Carton</div>
-                        <div class="package-detail">24 units</div>
-                    </div>
-                    <div class="breakdown-arrow">→</div>
-                    <div class="unit-grid">
-                        <div class="unit-item">
-                            <div class="unit-icon">🧃</div>
-                            <div class="unit-label">1 unit</div>
-                        </div>
-                        <div class="unit-item">
-                            <div class="unit-icon">🧃</div>
-                            <div class="unit-label">1 unit</div>
-                        </div>
-                        <div class="unit-item">
-                            <div class="unit-icon">🧃</div>
-                            <div class="unit-label">1 unit</div>
-                        </div>
-                        <div class="unit-item">
-                            <div class="unit-icon">🧃</div>
-                            <div class="unit-label">1 unit</div>
-                        </div>
-                    </div>
+            <div class="flex-1 flex justify-center">
+                <div class="bg-gray-50 rounded-2xl p-6 flex items-center gap-4 shadow-md">
+                    <div class="text-center"><i class="fas fa-box-open text-4xl text-brand-accent"></i><div class="text-sm">1 Carton</div><div class="text-xs text-gray-500">24 units</div></div>
+                    <i class="fas fa-arrow-right text-brand-accent text-2xl"></i>
+                    <div class="flex gap-2"><i class="fas fa-cube text-2xl text-brand-main"></i><i class="fas fa-cube text-2xl text-brand-main"></i><i class="fas fa-cube text-2xl text-brand-main"></i><i class="fas fa-cube text-2xl text-brand-main"></i></div>
                 </div>
+            </div>
             </div>
         </div>
 
@@ -247,7 +228,7 @@
         <div class="pricing-container">
             <div class="price-card" data-aos="fade-up" data-aos-delay="100">
                 <h4>Monthly</h4>
-                <div class="amount">₦5,000 <span>/ month</span></div>
+                <div class="amount">₦4,999 <span>/ month</span></div>
                 <ul class="price-features">
                     <li>Full Stock Management</li>
                     <li>Staff Performance Tracking</li>
@@ -260,7 +241,7 @@
             <div class="price-card featured" data-aos="fade-up" data-aos-delay="200">
                 <div class="badge">SAVE 15%</div>
                 <h4>Annual Pro</h4>
-                <div class="amount">₦45,000 <span>/ year</span></div>
+                <div class="amount">₦39,000 <span>/ year</span></div>
                 <ul class="price-features">
                     <li>Everything in Monthly</li>
                     <li>Priority WhatsApp Support</li>
@@ -269,11 +250,23 @@
                 </ul>
                 <a href="admin/register.html" class="price-btn">Claim Discount</a>
             </div>
+            
+            <div class="price-card" data-aos="fade-up" data-aos-delay="100">
+                <h4>Unlimitedly</h4>
+                <div class="amount">₦149,000 <span>full time</span></div>
+                <ul class="price-features">
+                    <li>Full Stock Management</li>
+                    <li>Staff Performance Tracking</li>
+                    <li>Daily Profit Reports</li>
+                    <li>Offline Data Security</li>
+                </ul>
+                <a href="admin/register.html" class="price-btn">Get Started</a>
+            </div>
 
-            <div class="price-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="price-card featured" data-aos="fade-up" data-aos-delay="300">
                 <h4>Agent Program</h4>
                 <div class="amount">10% <span>Commission</span></div>
-                <p style="font-size: 14px; color: var(--gray-600);">Don't want to pay? Refer 5 other shop owners and
+                <p>Don't want to pay? Refer 5 other shop owners and
                     your subscription becomes <b>FREE</b> for 7 Days.</p>
                 <ul class="price-features">
                     <li>Unique Referral Link</li>
@@ -285,6 +278,49 @@
             </div>
         </div>
     </section>
+    <!-- ================== FOOTER ================== -->
+    <footer class="bg-brand-main text-white pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                <!-- Contact Info -->
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Get In Touch</h4>
+                    <div class="space-y-2 text-gray-300">
+                        <p><i class="fas fa-map-marker-alt w-6"></i> Gombe State, Nigeria</p>
+                        <p><i class="fas fa-phone w-6"></i> 09133332884</p>
+                        <p><i class="fas fa-envelope w-6"></i> engineerabubakar2702@gmail.com</p>
+                    </div>
+                </div>
+                <!-- Popular Links -->
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Popular Links</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-brand-bright transition">Home</a></li>
+                        <li><a href="#" class="hover:text-brand-bright transition">Cookies Policy</a></li>
+                        <li><a href="#" class="hover:text-brand-bright transition">Help Center</a></li>
+                        <li><a href="#" class="hover:text-brand-bright transition">FAQs</a></li>
+                    </ul>
+                </div>
+                <!-- Language Switch (for footer) -->
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Language</h4>
+                    <div class="flex gap-2">
+                        <button class="lang-footer bg-white/10 px-4 py-2 rounded-full text-sm hover:bg-brand-main transition" data-lang="en">English</button>
+                        <button class="lang-footer bg-white/10 px-4 py-2 rounded-full text-sm hover:bg-brand-main transition" data-lang="ha">Hausa</button>
+                        <button class="lang-footer bg-white/10 px-4 py-2 rounded-full text-sm hover:bg-brand-main transition" data-lang="ar">العربية</button>
+                    </div>
+                </div>
+                <!-- Logo + Copyright -->
+                <div>
+                    <img id="footerLogo" src="asset/logo.png" alt="Mizana Pro" class="h-12 mb-4">
+                    <p class="text-sm text-gray-300">© Mizana Pro, All Right Reserved.<br>Developed By Abbah El-Nakeedy hub</p>
+                </div>
+            </div>
+            <div class="border-t border-white/20 mt-10 pt-6 text-center text-gray-400 text-sm">
+                &copy; 2026 Mizana Pro. All rights reserved.
+            </div>
+        </div>
+    </footer>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script src="JS/landing_page.js"></script>
