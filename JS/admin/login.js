@@ -39,7 +39,7 @@
          
    
          // 5. Redirect to dashboard or shop setup
-         window.location.href = "../settings/profile.html"; // adjust as needed
+         window.location.href = "../app/dashboard.html"; // adjust as needed
        } catch (error) {
          alert(error.message);
        }
