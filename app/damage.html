@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Record Waste</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#132B77',
+                            accent: '#0A89A4',
+                            danger: '#e74c3c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .reason-chip.active {
+            background-color: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+        .product-option {
+            transition: all 0.2s;
+        }
+        .product-option:hover {
+            background-color: #f3f4f6;
+        }
+        .dark .product-option:hover {
+            background-color: #374151;
+        }
+        input[type="number"]::-webkit-inner-spin-button { display: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .product-img {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+    </style>
+    
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 border-gray-200 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Record Waste / Damage</h1>
+            </div>
+            <button id="darkModeToggle" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-xl mx-auto space-y-6 pb-20">
+        <!-- 1. Product Selection -->
+        <section class="space-y-3">
+            <label class="text-xs font-black text-gray-400 uppercase tracking-widest">1. Select Product</label>
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="prodSearch" placeholder="Search product to dispose..." 
+                    class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-brand-danger transition-all"
+                    autocomplete="off">
+            </div>
+
+            <!-- Product dropdown results -->
+            <div id="productResults" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border dark:border-gray-700 max-h-64 overflow-y-auto scrollbar-hide hidden"></div>
+
+            <!-- Selected product preview -->
+            <div id="selectedProd" class="hidden bg-brand-danger/5 border border-brand-danger/20 p-4 rounded-2xl flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div id="selectedProdImgContainer" class="w-10 h-10 flex items-center justify-center"></div>
+                    <div>
+                        <h4 class="font-bold text-sm" id="selectedProdName">Product Name</h4>
+                        <p class="text-[10px] text-gray-500">Unit Price: ₦<span id="selectedProdPrice">0</span></p>
+                        <p class="text-[10px] text-gray-500">Available Stock: <span id="selectedProdStock">0</span></p>
+                    </div>
+                </div>
+                <button onclick="resetSelection()" class="text-xs text-brand-danger font-bold">Change</button>
+            </div>
+        </section>
+
+        <!-- 2. Quantity & Loss Preview -->
+        <section class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="text-xs font-black text-gray-400 uppercase tracking-widest">2. Quantity</label>
+                    <div class="flex items-center bg-white focus:ring-2 focus:ring-brand-danger dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl overflow-hidden">
+                        <button onclick="adjQty(-1)" class="p-4 hover:bg-gray-100 dark:hover:bg-gray-700 border-r dark:border-gray-700 border-gray-200 transition">-</button>
+                        <input type="number" id="wasteQty" value="1" min="1" class="w-full text-center bg-transparent outline-none border- border-gray-200 font-bold dark:text-white">
+                        <button onclick="adjQty(1)" class="p-4 hover:bg-gray-100 dark:hover:bg-gray-700 border-l dark:border-gray-700 border-gray-200 transition">+</button>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="text-xs font-black text-gray-400 uppercase tracking-widest">3. Loss Preview</label>
+                    <div class="h-[58px] flex flex-col justify-center px-4 bg-red-500/10 rounded-2xl border border-red-500/20">
+                        <p class="text-[10px] text-brand-danger font-bold uppercase">Estimated Loss</p>
+                        <p id="lossAmount" class="text-lg font-black text-brand-danger">₦0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Reason -->
+            <div class="space-y-2">
+                <label class="text-xs font-black text-gray-400 uppercase tracking-widest">4. Reason for Disposal</label>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="setReason(this)" class="reason-chip px-4 py-2 rounded-full border dark:border-gray-700 border-gray-200 text-xs font-bold transition">Expired</button>
+                    <button onclick="setReason(this)" class="reason-chip px-4 py-2 rounded-full border dark:border-gray-700 border-gray-200 text-xs font-bold transition">Damaged / Broken</button>
+                    <button onclick="setReason(this)" class="reason-chip px-4 py-2 rounded-full border dark:border-gray-700 border-gray-200 text-xs font-bold transition">Spilled / Leaked</button>
+                    <button onclick="setReason(this)" class="reason-chip px-4 py-2 rounded-full border dark:border-gray-700 border-gray-200 text-xs font-bold transition">Stolen</button>
+                    <button onclick="setReason(this)" class="reason-chip px-4 py-2 rounded-full border dark:border-gray-700 border-gray-200 text-xs font-bold transition">Other</button>
+                </div>
+            </div>
+
+            <!-- 5. Notes -->
+            <div class="space-y-2">
+                <label class="text-xs font-black text-gray-400 uppercase tracking-widest">5. Add Notes (Optional)</label>
+                <textarea id="notes" placeholder="Describe how the damage happened..." 
+                    class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-brand-danger h-24 resize-none"></textarea>
+            </div>
+        </section>
+
+        <!-- Confirm Button -->
+        <button onclick="confirmDisposal()" class="w-full bg-brand-danger text-white py-5 rounded-3xl font-black text-lg shadow-lg active:scale-95 transition-transform">
+            CONFIRM DISPOSAL
+        </button>
+
+        <p class="text-center text-[10px] text-gray-500 uppercase tracking-tighter">
+            <i class="fas fa-info-circle mr-1"></i> This action will reduce inventory stock immediately.
+        </p>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg z-50 hidden"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ================== DARK MODE ==================
+            const darkToggle = document.getElementById('darkModeToggle');
+            const prefersDark = localStorage.getItem('darkMode') === 'true';
+            if (prefersDark) document.body.classList.add('dark');
+            if (darkToggle) {
+                darkToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark');
+                    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+                });
+            }
+
+            // ================== GLOBAL VARIABLES ==================
+            let products = [];
+            let selectedProduct = null;
+            let selectedReason = '';
+
+            // ================== LOAD PRODUCTS ==================
+            function loadProducts() {
+                try {
+                    const saved = localStorage.getItem('products');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        products = Array.isArray(parsed) ? parsed : [];
+                    } else {
+                        products = [];
+                    }
+                } catch (e) {
+                    console.error('Error loading products:', e);
+                    products = [];
+                }
+            }
+            loadProducts();
+
+            // ================== HELPER: GET PER‑PIECE PRICE ==================
+            function getPiecePrice(product) {
+                const pricePerPackage = product.price || 0;
+                const piecesPerPackage = product.piecesPerPackage || 1;
+                return pricePerPackage / piecesPerPackage;
+            }
+
+            // ================== HELPER: SAFE IMAGE RENDERING ==================
+            function renderImage(imgValue) {
+                if (!imgValue) return '<span class="text-2xl">📦</span>';
+                if (typeof imgValue === 'string' && (imgValue.startsWith('http') || imgValue.startsWith('data:image'))) {
+                    return `<img src="${imgValue}" class="product-img" alt="product" onerror="this.style.display='none'">`;
+                }
+                return `<span class="text-2xl">${imgValue}</span>`;
+            }
+
+            // ================== FILTER PRODUCTS ==================
+            window.filterProducts = function() {
+                const query = document.getElementById('prodSearch').value.trim().toLowerCase();
+                const resultsDiv = document.getElementById('productResults');
+                if (!query) {
+                    resultsDiv.classList.add('hidden');
+                    return;
+                }
+                // Only show in‑stock products
+                const filtered = products.filter(p => 
+                    p && p.name && p.stock > 0 && p.name.toLowerCase().includes(query)
+                );
+                if (filtered.length === 0) {
+                    resultsDiv.innerHTML = '<div class="p-4 text-center text-gray-500">No in‑stock products found</div>';
+                    resultsDiv.classList.remove('hidden');
+                    return;
+                }
+                resultsDiv.innerHTML = filtered.map(p => {
+                    const imgHtml = renderImage(p.img);
+                    const piecePrice = getPiecePrice(p);
+                    return `
+                        <div class="product-option p-3 flex items-center gap-3 cursor-pointer border-b dark:border-gray-700 last:border-0" data-id="${p.id}">
+                            <div class="w-10 h-10 flex items-center justify-center text-2xl">${imgHtml}</div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm">${p.name || 'Unknown'}</h4>
+                                <p class="text-xs text-gray-500">Stock: ${p.stock || 0} | ₦${piecePrice.toLocaleString()} / piece</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                resultsDiv.classList.remove('hidden');
+            };
+
+            // ================== SELECT PRODUCT (string ID) ==================
+            function selectProductById(id) {
+                // Convert to string for comparison (IDs from upload are strings)
+                const idStr = String(id);
+                selectedProduct = products.find(p => p && String(p.id) === idStr);
+                if (!selectedProduct) {
+                    console.warn('Product not found for id:', id);
+                    showToast('Product not found', true);
+                    return;
+                }
+
+                document.getElementById('prodSearch').value = selectedProduct.name;
+                document.getElementById('productResults').classList.add('hidden');
+
+                const imgContainer = document.getElementById('selectedProdImgContainer');
+                imgContainer.innerHTML = renderImage(selectedProduct.img);
+                document.getElementById('selectedProdName').innerText = selectedProduct.name;
+                document.getElementById('selectedProdPrice').innerText = getPiecePrice(selectedProduct).toLocaleString();
+                document.getElementById('selectedProdStock').innerText = selectedProduct.stock || 0;
+                document.getElementById('selectedProd').classList.remove('hidden');
+
+                updateLoss();
+            }
+
+            // ================== EVENT DELEGATION FOR RESULTS ==================
+            document.getElementById('productResults').addEventListener('click', function(e) {
+                const option = e.target.closest('.product-option');
+                if (option) {
+                    const id = option.getAttribute('data-id');
+                    if (id) selectProductById(id);
+                }
+            });
+
+            // ================== RESET SELECTION ==================
+            window.resetSelection = function() {
+                selectedProduct = null;
+                document.getElementById('selectedProd').classList.add('hidden');
+                document.getElementById('prodSearch').value = '';
+                document.getElementById('productResults').classList.add('hidden');
+                document.getElementById('lossAmount').innerText = '₦0';
+                document.getElementById('wasteQty').value = 1;
+            };
+
+            // ================== ADJUST QUANTITY ==================
+            window.adjQty = function(val) {
+                const input = document.getElementById('wasteQty');
+                let newVal = parseInt(input.value) + val;
+                if (isNaN(newVal) || newVal < 1) newVal = 1;
+                if (selectedProduct && newVal > (selectedProduct.stock || 0)) {
+                    newVal = selectedProduct.stock;
+                }
+                input.value = newVal;
+                updateLoss();
+            };
+
+            // ================== UPDATE LOSS AMOUNT (per‑piece) ==================
+            function updateLoss() {
+                if (!selectedProduct) return;
+                const qty = parseInt(document.getElementById('wasteQty').value) || 1;
+                const piecePrice = getPiecePrice(selectedProduct);
+                const total = qty * piecePrice;
+                document.getElementById('lossAmount').innerText = '₦' + total.toLocaleString();
+            }
+
+            // ================== SET REASON ==================
+            window.setReason = function(el) {
+                document.querySelectorAll('.reason-chip').forEach(c => c.classList.remove('active'));
+                el.classList.add('active');
+                selectedReason = el.innerText.trim();
+            };
+
+            // ================== SHOW TOAST ==================
+            function showToast(message, isError = false) {
+                const toast = document.getElementById('toast');
+                toast.innerText = message;
+                toast.classList.remove('hidden');
+                toast.style.backgroundColor = isError ? '#dc2626' : '#1f2937';
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            }
+
+            // ================== CONFIRM DISPOSAL ==================
+            window.confirmDisposal = function() {
+                try {
+                    if (!selectedProduct) {
+                        showToast('Please select a product.', true);
+                        return;
+                    }
+                    if (!selectedReason) {
+                        showToast('Please select a reason for disposal.', true);
+                        return;
+                    }
+                    const qty = parseInt(document.getElementById('wasteQty').value) || 1;
+                    const notes = document.getElementById('notes').value;
+
+                    const product = products.find(p => p && String(p.id) === String(selectedProduct.id));
+                    if (!product) {
+                        showToast('Product not found in inventory.', true);
+                        return;
+                    }
+                    if ((product.stock || 0) < qty) {
+                        showToast(`Only ${product.stock} items available.`, true);
+                        return;
+                    }
+
+                    const piecePrice = getPiecePrice(product);
+                    const totalLoss = qty * piecePrice;
+
+                    if (!confirm(`Record disposal of ${qty} x ${product.name} (₦${totalLoss.toLocaleString()})?`)) {
+                        return;
+                    }
+
+                    // Reduce stock
+                    product.stock -= qty;
+                    localStorage.setItem('products', JSON.stringify(products));
+
+                    // Save waste log
+                    const wasteLogs = JSON.parse(localStorage.getItem('wasteLogs') || '[]');
+                    const wasteRecord = {
+                        id: Date.now(),
+                        productId: product.id,
+                        productName: product.name,
+                        productImg: product.img,
+                        quantity: qty,
+                        piecePrice: piecePrice,
+                        totalLoss: totalLoss,
+                        reason: selectedReason,
+                        notes: notes,
+                        timestamp: new Date().toISOString(),
+                        voided: false
+                    };
+                    wasteLogs.push(wasteRecord);
+                    localStorage.setItem('wasteLogs', JSON.stringify(wasteLogs));
+
+                    showToast(`Disposal recorded: -₦${totalLoss.toLocaleString()}`);
+
+                    // Reset form
+                    resetSelection();
+                    document.querySelectorAll('.reason-chip').forEach(c => c.classList.remove('active'));
+                    document.getElementById('notes').value = '';
+                    selectedReason = '';
+                } catch (e) {
+                    console.error('Error in confirmDisposal:', e);
+                    showToast('An error occurred', true);
+                }
+            };
+
+            // ================== EVENT LISTENERS ==================
+            document.getElementById('prodSearch').addEventListener('input', filterProducts);
+
+            document.addEventListener('click', function(e) {
+                const results = document.getElementById('productResults');
+                const search = document.getElementById('prodSearch');
+                if (results && search && !search.contains(e.target) && !results.contains(e.target)) {
+                    results.classList.add('hidden');
+                }
+            });
+
+            // Focus search on load
+            window.addEventListener('load', function() {
+                document.getElementById('prodSearch').focus();
+            });
+
+            // Update if products change in another tab
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'products') {
+                    loadProducts();
+                    if (selectedProduct) {
+                        const updated = products.find(p => p && String(p.id) === String(selectedProduct.id));
+                        if (updated) {
+                            selectedProduct = updated;
+                            updateLoss();
+                        } else {
+                            resetSelection();
+                        }
+                    }
+                }
+            });
+        })();
+        
+    </script>
+</body>
+</html>

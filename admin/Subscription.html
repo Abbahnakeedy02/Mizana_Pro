@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mizana Pro · Pricing</title>
+    <link rel="stylesheet" href="../CSS/subscription.css">
+    <style>
+        /* Brand colors */
+        :root {
+            --navy: #132B77;
+            --teal: #0A89A4;
+            --orange: #0A89A4; /* using teal as accent for consistency */
+        }
+        /* Override default styles with your brand */
+        .header { background-color: var(--navy); }
+        .logo-small span { color: var(--teal); }
+        .plan-card.active { border-color: var(--teal); }
+        .plan-card.active::after { color: var(--teal); }
+        .savings { color: var(--teal); }
+        .pay-btn { background-color: var(--navy); }
+        .pay-btn:hover { background-color: var(--teal); }
+        .benefits li::before { color: var(--teal); }
+
+        /* Additional tweaks */
+        .plan-card { cursor: pointer; transition: 0.3s; }
+        .plan-card:hover { transform: translateY(-4px); }
+        .plan-card.active { border-width: 2px; }
+        .pricing-plans {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        .plan-card {
+            flex: 1 1 200px;
+            max-width: 220px;
+            border: 2px solid #eee;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .plan-price { font-size: 24px; font-weight: 800; display: block; margin: 10px 0; }
+        .savings { font-size: 12px; font-weight: bold; }
+        .sub-container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .header { padding: 30px 20px; color: white; text-align: center; }
+        .benefits { padding: 20px 40px; }
+        .pay-btn { display: block; width: 85%; margin: 20px auto; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; }
+        .footer-note { text-align: center; font-size: 11px; color: #999; padding-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="sub-container">
+    <div class="header">
+        <div class="logo-small">MIZANA <span>PRO</span></div>
+        <p style="opacity:0.9;">Unlock Truth & Transparency</p>
+    </div>
+
+    <div class="pricing-plans">
+        <!-- 7 Days Free Trial -->
+        <div class="plan-card" data-plan="trial">
+            <span class="plan-title">7 Days Free Trial</span>
+            <span class="plan-price">₦0</span>
+            <span class="savings">No payment required</span>
+        </div>
+        <!-- Monthly Access -->
+        <div class="plan-card" data-plan="monthly">
+            <span class="plan-title">Monthly Access</span>
+            <span class="plan-price">₦5,000</span>
+        </div>
+        <!-- Annual Business -->
+        <div class="plan-card" data-plan="annual">
+            <span class="plan-title">Annual Business</span>
+            <span class="plan-price">₦50,000</span>
+            <span class="savings">SAVE ₦10,000 PER YEAR</span>
+        </div>
+        <!-- Unlimited (new) -->
+        <div class="plan-card" data-plan="unlimited">
+            <span class="plan-title">Unlimited</span>
+            <span class="plan-price">₦120,000</span>
+            <span class="savings">Best for large shops</span>
+        </div>
+    </div>
+
+    <div class="benefits">
+        <ul>
+            <li>Unlimited Stock & Sub‑unit tracking</li>
+            <li>Daily Profit vs. Expense Analytics</li>
+            <li>Staff Performance Leaderboard</li>
+            <li>Secure Local Storage Backup</li>
+        </ul>
+    </div>
+
+    <button class="pay-btn" id="subscribeBtn">START MY SUBSCRIPTION</button>
+    
+    <div class="footer-note">
+        Secure payment via Paystack or Bank Transfer. <br>
+        Free trial requires no payment details.
+    </div>
+</div>
+
+<script type="module">
+    // ================== Firebase Setup ==================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAixrIUsksJ4xYvYowbl85L4qV6gEAUqUs",
+        authDomain: "mizanapro-2950c.firebaseapp.com",
+        projectId: "mizanapro-2950c",
+        storageBucket: "mizanapro-2950c.firebasestorage.app",
+        messagingSenderId: "754283606394",
+        appId: "1:754283606394:web:ff9a9dabcc1586c1c7e6c3",
+        measurementId: "G-RK9G1WFH5X"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ================== Plan Selection ==================
+    let selectedPlan = null;
+    const planCards = document.querySelectorAll('.plan-card');
+
+    planCards.forEach(card => {
+        card.addEventListener('click', () => {
+            planCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedPlan = card.dataset.plan; // 'trial', 'monthly', 'annual', 'unlimited'
+            console.log('Selected plan:', selectedPlan);
+        });
+    });
+
+    // ================== Subscribe Button ==================
+    document.getElementById('subscribeBtn').addEventListener('click', async () => {
+        if (!selectedPlan) {
+            alert('Please select a plan first.');
+            return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) {
+            // Redirect to signup, passing the selected plan
+            window.location.href = `register.html?plan=${selectedPlan}`;
+            return;
+        }
+
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists()) {
+                alert('User profile not found. Please contact support.');
+                return;
+            }
+
+            let subscriptionData = {};
+            const now = new Date();
+
+            if (selectedPlan === 'trial') {
+                const trialEnd = new Date(now);
+                trialEnd.setDate(now.getDate() + 7);
+                subscriptionData = {
+                    plan: '7 Days Free Trial',
+                    status: 'trialing',
+                    startDate: now.toISOString(),
+                    trialEnds: trialEnd.toISOString(),
+                    billingDate: trialEnd.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                };
+            } else if (selectedPlan === 'monthly') {
+                // Placeholder – in real app, integrate payment here
+                alert('Monthly payment integration needed. For demo, we activate it.');
+                const nextBilling = new Date(now);
+                nextBilling.setMonth(now.getMonth() + 1);
+                subscriptionData = {
+                    plan: 'Monthly Pro',
+                    status: 'active',
+                    startDate: now.toISOString(),
+                    nextBilling: nextBilling.toISOString(),
+                    billingDate: nextBilling.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                };
+            } else if (selectedPlan === 'annual') {
+                alert('Annual payment integration needed. For demo, we activate it.');
+                const nextBilling = new Date(now);
+                nextBilling.setFullYear(now.getFullYear() + 1);
+                subscriptionData = {
+                    plan: 'Annual Pro',
+                    status: 'active',
+                    startDate: now.toISOString(),
+                    nextBilling: nextBilling.toISOString(),
+                    billingDate: nextBilling.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                };
+            } else if (selectedPlan === 'unlimited') {
+                alert('Unlimited plan payment integration needed. For demo, we activate it.');
+                const nextBilling = new Date(now);
+                nextBilling.setFullYear(now.getFullYear() + 1);
+                subscriptionData = {
+                    plan: 'Unlimited Pro',
+                    status: 'active',
+                    startDate: now.toISOString(),
+                    nextBilling: nextBilling.toISOString(),
+                    billingDate: nextBilling.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                };
+            }
+
+            await updateDoc(userDocRef, { subscription: subscriptionData });
+
+            // Log activity (optional, in localStorage for now)
+            let activity = JSON.parse(localStorage.getItem('subscriptionActivity') || '[]');
+            activity.push({
+                action: `Subscribed to ${subscriptionData.plan}`,
+                date: new Date().toLocaleString(),
+                amount: selectedPlan === 'trial' ? '₦0' : (selectedPlan === 'monthly' ? '₦5,000' : selectedPlan === 'annual' ? '₦50,000' : '₦120,000')
+            });
+            if (activity.length > 10) activity.shift();
+            localStorage.setItem('subscriptionActivity', JSON.stringify(activity));
+
+            alert('Subscription saved! Redirecting to dashboard...');
+            window.location.href = '../app/dashboard.html';
+        } catch (error) {
+            console.error(error);
+            alert('Error: ' + error.message);
+        }
+    });
+
+    // Optional: pre‑select a plan if passed via URL (e.g., from register)
+    const urlParams = new URLSearchParams(window.location.search);
+    const planParam = urlParams.get('plan');
+    if (planParam) {
+        const targetCard = Array.from(planCards).find(card => card.dataset.plan === planParam);
+        if (targetCard) {
+            planCards.forEach(c => c.classList.remove('active'));
+            targetCard.classList.add('active');
+            selectedPlan = planParam;
+        }
+    }
+</script>
+
+</body>
+</html>

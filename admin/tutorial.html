@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Welcome to Mizana Pro · 3-Step Magic</title>
+    <link rel="stylesheet" href="../CSS/setup.css">
+
+</head>
+<body>
+    <div class="tutorial-card">
+        <div class="logo">
+            <img src="../asset/logo.png" alt="">
+            <span>Mizana<span style="color: var(--brand-main);">PRO</span></span>
+        </div>
+        <h1>✨ 3-Step Magic Setup</h1>
+        <div class="subhead">Swipe to learn how Mizana protects your profit</div>
+
+        <!-- Swipe slides -->
+        <div class="swipe-container">
+            <div class="slide active" id="slide1">
+                <div class="slide-icon">🪄</div>
+                <h3>1. Nakeedy Verification</h3>
+                <p>We match your daily sales against physical bank deposits. No more "missing" cash at closing time.</p>
+            </div>
+            <div class="slide" id="slide2">
+                <div class="slide-icon">📦</div>
+                <h3>2. FIFO Expiry Alerts</h3>
+                <p>Our batch tracking tells you which items expire soon - discount them before you lose money.</p>
+            </div>
+            <div class="slide" id="slide3">
+                <div class="slide-icon">🛡️</div>
+                <h3>3. Admin PIN Protection</h3>
+                <p>Staff see only selling prices. You see the true profit and investment. Set your master key now.</p>
+            </div>
+        </div>
+
+        <!-- Dots + Arrows -->
+        <div class="controls">
+            <button class="arrow-btn" id="prevSlide">←</button>
+            <div style="display: flex; gap: 12px;">
+                <span class="dot active" data-index="0"></span>
+                <span class="dot" data-index="1"></span>
+                <span class="dot" data-index="2"></span>
+            </div>
+            <button class="arrow-btn" id="nextSlide">→</button>
+        </div>
+
+        <!-- CTA button -->
+        <a href="setup.html" class="btn-setup">▶ Set up my shop</a>
+        <p style="margin-top: 20px; color: var(--brand-mid);">Takes only 2 minutes</p>
+    </div>
+    <script src="../JS/setup.js"></script>
+</body>
+</html>

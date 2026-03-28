@@ -1,0 +1,741 @@
+-<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · History Hub</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <!-- jsPDF + AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#132B77',
+                            accent: '#0A89A4',
+                            danger: '#e74c3c',
+                            success: '#2ecc71'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .log-item {
+            transition: all 0.2s;
+            border-left-width: 2px;
+            cursor: pointer;
+        }
+
+        .filter-chip.active {
+            background-color: #0A89A4;
+            color: white;
+            border-color: #0A89A4;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .void-badge {
+            background: #e74c3c;
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()"
+                    class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Activity Logs</h1>
+            </div>
+            <button onclick="openExportModal()"
+                class="bg-brand-main/10 text-brand-main dark:text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-main/20 transition">
+                <i class="fas fa-file-pdf mr-2"></i>Export PDF
+            </button>
+        </div>
+
+        <!-- Filter chips -->
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            <button onclick="filterLogs('all', this)"
+                class="filter-chip active shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">All
+                Activity</button>
+            <button onclick="filterLogs('sales', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Sales</button>
+            <button onclick="filterLogs('security', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Security</button>
+            <button onclick="filterLogs('inventory', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Inventory</button>
+            <button onclick="filterLogs('finance', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Finance</button>
+            <button onclick="filterLogs('subscription', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Subscription</button>
+            <button onclick="filterLogs('expenses', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Expenses</button>
+            <button onclick="filterLogs('uploads', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Uploads</button>
+            <button onclick="filterLogs('deletion', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Deletions</button>
+            <button onclick="filterLogs('waste', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Waste</button>
+            <button onclick="filterLogs('void', this)"
+                class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold text-brand-danger">Void</button>
+        </div>
+    </header>
+
+    <main id="logContainer" class="p-4 max-w-3xl mx-auto space-y-3 pb-20">
+        <!-- Logs will be injected here -->
+    </main>
+
+    <!-- Record Detail Modal -->
+    <div id="recordModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm"
+        onclick="if(event.target===this) closeRecordModal()">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+            <div class="p-6 text-center border-b dark:border-gray-700 border-gray-200" id="modalHeader"></div>
+            <div class="p-6 space-y-4" id="modalBody"></div>
+            <div class="p-6 pt-0 flex gap-2">
+                <button id="voidBtn" onclick="voidCurrentTransaction()"
+                    class="hidden flex-1 bg-brand-danger text-white py-4 rounded-2xl font-bold hover:bg-opacity-90 transition">Void
+                    Transaction</button>
+                <button onclick="closeRecordModal()"
+                    class="flex-1 bg-brand-main text-white py-4 rounded-2xl font-bold hover:bg-opacity-90 transition">Close
+                    Record</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal (compact category selection) -->
+    <!-- ================== Updated Export Modal (inside the body) ================== -->
+    <div id="exportModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4 backdrop-blur-sm"
+        onclick="if(event.target===this) closeExportModal()">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-5 border-b dark:border-gray-700 border-gray-200 flex justify-between items-center">
+                <h3 class="font-bold dark:text-white">Export PDF</h3>
+                <button onclick="closeExportModal()"
+                    class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-times text-gray-500"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <p class="text-xs text-gray-500">Select categories to include:</p>
+                <div class="grid grid-cols-2 gap-3" id="exportCategoryList">
+                    <!-- Checkboxes will be injected here -->
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="selectAllExportCategories(true)"
+                        class="flex-1 py-2 text-xs bg-brand-accent/10 text-brand-accent rounded-full">Select
+                        All</button>
+                    <button onclick="selectAllExportCategories(false)"
+                        class="flex-1 py-2 text-xs bg-gray-200 dark:bg-gray-700 rounded-full">Clear All</button>
+                </div>
+                <button onclick="downloadSelectedCategories()"
+                    class="w-full bg-brand-main text-white py-3 rounded-xl text-sm font-bold hover:bg-opacity-90 transition">
+                    <i class="fas fa-file-pdf mr-2"></i>Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg z-50 hidden">
+    </div>
+
+    <script>
+        // ================== DARK MODE ==================
+        const prefersDark = localStorage.getItem('darkMode') === 'true';
+        if (prefersDark) document.body.classList.add('dark');
+
+        // ================== SAFE DATE PARSER ==================
+        function parseDateSafely(dateStr) {
+            if (!dateStr) return new Date(0);
+            let d = new Date(dateStr);
+            if (!isNaN(d)) return d;
+            const parts = dateStr.split(', ');
+            if (parts.length !== 2) return new Date(0);
+            const datePart = parts[0], timePart = parts[1];
+            const dateComponents = datePart.split('/');
+            if (dateComponents.length !== 3) return new Date(0);
+            let first = parseInt(dateComponents[0], 10);
+            let second = parseInt(dateComponents[1], 10);
+            let year = parseInt(dateComponents[2], 10);
+            let month, day;
+            if (first > 12) { day = first; month = second; } else { month = first; day = second; }
+            const timeMatch = timePart.match(/(\d+):(\d+):(\d+)\s*([AP]M)?/i);
+            if (!timeMatch) return new Date(year, month - 1, day);
+            let hour = parseInt(timeMatch[1], 10);
+            let minute = parseInt(timeMatch[2], 10);
+            let sec = parseInt(timeMatch[3], 10);
+            let ampm = timeMatch[4];
+            if (ampm) {
+                if (ampm.toUpperCase() === 'PM' && hour < 12) hour += 12;
+                if (ampm.toUpperCase() === 'AM' && hour === 12) hour = 0;
+            }
+            if (year < 100) year += 2000;
+            return new Date(year, month - 1, day, hour, minute, sec);
+        }
+
+        // ================== GLOBAL VARIABLES ==================
+        let allLogs = [];
+        let filteredLogs = [];
+        let currentFilter = 'all';
+        let currentCard = null;
+
+        // ================== LOAD ALL LOGS ==================
+        function loadAllLogs() {
+            const logs = [];
+
+            // Sales
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            transactions.forEach(t => {
+                logs.push({
+                    id: t.id,
+                    collection: 'transactions',
+                    type: 'sales',
+                    title: `Sale #${t.id}`,
+                    description: t.items ? t.items.map(i => `${i.name} x${i.qty}`).join(', ') : '',
+                    amount: `+₦${(t.total || 0).toLocaleString()}`,
+                    time: t.timestamp,
+                    icon: 'fa-receipt',
+                    iconBg: 'green',
+                    voided: t.voided || false,
+                    details: { cashier: t.cashier || 'Walk-in', payment: t.paymentMethod }
+                });
+            });
+
+            // Price changes (inventory)
+            const priceLogs = JSON.parse(localStorage.getItem('priceLogs') || '[]');
+            priceLogs.forEach(p => {
+                logs.push({
+                    id: p.id || p.timestamp,
+                    collection: 'priceLogs',
+                    type: 'inventory',
+                    title: 'Price Updated',
+                    description: `${p.productName}: ₦${p.oldPrice} → ₦${p.newPrice}`,
+                    amount: '',
+                    time: p.timestamp,
+                    icon: 'fa-tag',
+                    iconBg: 'blue',
+                    voided: p.voided || false,
+                    details: { changedBy: p.changedBy }
+                });
+            });
+
+            // Debts (finance)
+            const debts = JSON.parse(localStorage.getItem('debts') || '[]');
+            debts.forEach(d => {
+                logs.push({
+                    id: d.id,
+                    collection: 'debts',
+                    type: 'finance',
+                    title: d.status === 'paid' ? 'Debt Paid' : 'Debt Created',
+                    description: d.customerName + (d.notes ? ` – ${d.notes}` : ''),
+                    amount: d.status === 'paid' ? `+₦${(d.amount || 0).toLocaleString()}` : `₦${(d.amount || 0).toLocaleString()}`,
+                    time: d.paidDate || d.createdAt,
+                    icon: d.status === 'paid' ? 'fa-hand-holding-heart' : 'fa-hand-holding-usd',
+                    iconBg: 'purple',
+                    voided: d.voided || false,
+                    details: { status: d.status, dueDate: d.dueDate }
+                });
+            });
+
+            // Subscriptions
+            const subscriptions = JSON.parse(localStorage.getItem('subscriptions') || '[]');
+            subscriptions.forEach(s => {
+                logs.push({
+                    id: s.id || s.createdAt,
+                    collection: 'subscriptions',
+                    type: 'subscription',
+                    title: s.plan || 'Subscription',
+                    description: `${s.customerName || 'Customer'} – ${s.status || 'active'}`,
+                    amount: `₦${(s.amount || 0).toLocaleString()}`,
+                    time: s.startDate || s.createdAt,
+                    icon: 'fa-sync-alt',
+                    iconBg: 'indigo',
+                    voided: s.voided || false,
+                    details: { plan: s.plan, status: s.status, start: s.startDate, end: s.endDate, customer: s.customerName }
+                });
+            });
+
+            // Expenses
+            const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+            expenses.forEach(e => {
+                logs.push({
+                    id: e.timestamp,
+                    collection: 'expenses',
+                    type: 'expenses',
+                    title: e.category || 'Expense',
+                    description: e.notes || '',
+                    amount: `-₦${(e.amount || 0).toLocaleString()}`,
+                    time: e.timestamp,
+                    icon: 'fa-file-invoice',
+                    iconBg: 'red',
+                    voided: e.voided || false,
+                    details: { payment: e.payment }
+                });
+            });
+
+            // Uploads
+            const uploads = JSON.parse(localStorage.getItem('uploadHistory') || '[]');
+            uploads.forEach(u => {
+                logs.push({
+                    id: u.timestamp,
+                    collection: 'uploadHistory',
+                    type: 'uploads',
+                    title: 'Product Upload',
+                    description: u.productName,
+                    amount: '',
+                    time: u.timestamp,
+                    icon: 'fa-cloud-upload-alt',
+                    iconBg: 'gray',
+                    voided: u.voided || false,
+                    details: {}
+                });
+            });
+
+            // Waste – if you store waste logs, add them here
+            // Waste logs
+            const wasteLogs = JSON.parse(localStorage.getItem('wasteLogs') || '[]');
+            wasteLogs.forEach(w => {
+                logs.push({
+                    type: 'waste',
+                    title: 'Damage Recorded',
+                    description: `${w.productName} x${w.quantity} – ${w.reason}`,
+                    amount: `-₦${(w.totalLoss || 0).toLocaleString()}`,  // uses totalLoss
+                    time: w.timestamp,
+                    icon: 'fa-trash-alt',
+                    iconBg: 'red',
+                    details: {
+                        reason: w.reason,
+                        notes: w.notes || ''
+                    }
+                });
+            });
+
+            // 7. Deletion logs
+            const deletionLogs = JSON.parse(localStorage.getItem('deletionLogs') || '[]');
+            deletionLogs.forEach(d => {
+                logs.push({
+                    type: 'deletion',
+                    title: 'Product Deleted',
+                    description: d.productName,
+                    amount: '',
+                    time: d.timestamp,
+                    icon: 'fa-trash',
+                    iconBg: 'gray',
+                    details: {
+                        reason: d.reason
+                    }
+                });
+            });
+
+            logs.sort((a, b) => parseDateSafely(b.time) - parseDateSafely(a.time));
+            allLogs = logs;
+            filterLogs(currentFilter, document.querySelector('.filter-chip.active'));
+        }
+
+
+
+        // ================== RENDER LOGS ==================
+        function renderLogs() {
+            const container = document.getElementById('logContainer');
+            if (filteredLogs.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-10">No activity logs found</p>';
+                return;
+            }
+
+            let html = '';
+            let currentDate = null;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+
+            filteredLogs.forEach(log => {
+                const logDateObj = parseDateSafely(log.time);
+                const logDate = new Date(logDateObj);
+                logDate.setHours(0, 0, 0, 0);
+
+                if (!currentDate || logDate.getTime() !== currentDate.getTime()) {
+                    currentDate = logDate;
+                    let heading = logDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                    if (logDate.getTime() === today.getTime()) heading = 'Today';
+                    else if (logDate.getTime() === yesterday.getTime()) heading = 'Yesterday';
+                    html += `<h2 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-6 mb-2">${heading}</h2>`;
+                }
+
+                let borderColor = 'border-gray-400';
+                let iconBgColor = 'bg-gray-100 dark:bg-gray-700 text-gray-500';
+                if (log.type === 'sales') { borderColor = 'border-green-600'; iconBgColor = 'bg-green-100 dark:bg-green-900/30 text-brand-success'; }
+                else if (log.type === 'security') { borderColor = 'border-orange-500'; iconBgColor = 'bg-orange-100 dark:bg-orange-900/30 text-orange-500'; }
+                else if (log.type === 'inventory') { borderColor = 'border-blue-500'; iconBgColor = 'bg-blue-100 dark:bg-blue-900/30 text-blue-500'; }
+                else if (log.type === 'finance') { borderColor = 'border-purple-500'; iconBgColor = 'bg-purple-100 dark:bg-purple-900/30 text-purple-500'; }
+                else if (log.type === 'subscription') { borderColor = 'border-indigo-500'; iconBgColor = 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500'; }
+                else if (log.type === 'expenses') { borderColor = 'border-red-200'; iconBgColor = 'bg-red-100 dark:bg-red-900/30 text-red-400'; }
+                else if (log.type === 'uploads') { borderColor = 'border-gray-400'; iconBgColor = 'bg-gray-100 dark:bg-gray-700 text-gray-500'; }
+                else if (log.type === 'waste') { borderColor = 'border-red-500'; iconBgColor = 'bg-red-100 dark:bg-red-900/30 text-brand-danger'; }
+
+                const timeStr = logDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const voidBadge = log.voided ? '<span class="void-badge">Voided</span>' : '';
+
+                html += `
+                <div class="log-card ${log.type} log-item ${borderColor} bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border dark:border-gray-700 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition mb-3"
+                     data-id="${log.id}"
+                     data-collection="${log.collection}"
+                     data-type="${log.type}"
+                     data-voided="${log.voided}"
+                     data-title="${log.title}"
+                     data-description="${log.description}"
+                     data-amount="${log.amount}"
+                     data-time="${new Date(parseDateSafely(log.time)).toLocaleString()}"
+                     data-icon="${log.icon}"
+                     data-icon-bg="${log.iconBg}"
+                     data-details='${JSON.stringify(log.details).replace(/'/g, "&apos;")}'>
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 ${iconBgColor} rounded-lg flex items-center justify-center"><i class="fas ${log.icon}"></i></div>
+                        <div>
+                            <h4 class="font-bold text-sm dark:text-white flex items-center">${log.title} ${voidBadge}</h4>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400">${log.description}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-black text-sm ${log.amount.startsWith('+') ? 'text-brand-success' : log.amount.startsWith('-') ? 'text-brand-danger' : ''}">${log.amount}</p>
+                        <p class="text-[10px] font-mono text-gray-400 dark:text-gray-500">${timeStr}</p>
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ================== FILTER LOGS ==================
+        function filterLogs(category, btn) {
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = category;
+
+            if (category === 'void') {
+                filteredLogs = allLogs.filter(log => log.voided === true);
+            } else if (category === 'all') {
+                filteredLogs = allLogs.filter(log => !log.voided);
+            } else {
+                filteredLogs = allLogs.filter(log => log.type === category && !log.voided);
+            }
+            renderLogs();
+        }
+
+        // ================== RECORD MODAL ==================
+        function showRecordDetail(card) {
+            currentCard = card;
+            const id = card.dataset.id;
+            const collection = card.dataset.collection;
+            const type = card.dataset.type;
+            const voided = card.dataset.voided === 'true';
+            const title = card.dataset.title;
+            const description = card.dataset.description;
+            const amount = card.dataset.amount;
+            const time = card.dataset.time;
+            const icon = card.dataset.icon;
+            const iconBg = card.dataset.iconBg;
+            const details = JSON.parse(card.dataset.details || '{}');
+
+            const bgColorMap = {
+                green: 'bg-green-100 dark:bg-green-900/30 text-brand-success',
+                orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-500',
+                blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-500',
+                purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-500',
+                indigo: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500',
+                red: 'bg-red-100 dark:bg-red-900/30 text-red-500',
+                gray: 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+            };
+            const iconBgClass = bgColorMap[iconBg] || 'bg-gray-100 dark:bg-gray-700 text-gray-500';
+
+            let amountColor = 'text-gray-900 dark:text-white';
+            if (amount && amount.startsWith('+')) amountColor = 'text-brand-success';
+            else if (amount && amount.startsWith('-')) amountColor = 'text-brand-danger';
+
+            document.getElementById('modalHeader').innerHTML = `
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">${type} Record</h3>
+                <div class="flex justify-center mb-2">
+                    <div class="w-16 h-16 ${iconBgClass} rounded-2xl flex items-center justify-center text-3xl">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-black dark:text-white">${title}</h2>
+                ${amount ? `<p class="text-xl font-bold ${amountColor} mt-1">${amount}</p>` : ''}
+            `;
+
+            let bodyHTML = `
+                <div class="flex justify-between text-sm border-b dark:border-gray-700 border-gray-200 pb-3">
+                    <span class="text-gray-500 dark:text-gray-400">Description</span>
+                    <span class="font-bold dark:text-white text-right">${description}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500 dark:text-gray-400">Time</span>
+                    <span class="font-bold dark:text-white">${time}</span>
+                </div>
+            `;
+            for (let key in details) {
+                const displayKey = key.charAt(0).toUpperCase() + key.slice(1);
+                bodyHTML += `
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">${displayKey}</span>
+                        <span class="font-bold dark:text-white">${details[key]}</span>
+                    </div>
+                `;
+            }
+
+            document.getElementById('modalBody').innerHTML = bodyHTML;
+
+            const voidBtn = document.getElementById('voidBtn');
+            if (!voided && ['sales', 'expenses', 'finance'].includes(type)) {
+                voidBtn.classList.remove('hidden');
+            } else {
+                voidBtn.classList.add('hidden');
+            }
+
+            document.getElementById('recordModal').style.display = 'flex';
+        }
+
+        function closeRecordModal() {
+            document.getElementById('recordModal').style.display = 'none';
+            currentCard = null;
+        }
+
+        // ================== VOID TRANSACTION ==================
+        async function voidCurrentTransaction() {
+            if (!currentCard) return;
+            const id = currentCard.dataset.id;
+            const collection = currentCard.dataset.collection;
+            const type = currentCard.dataset.type;
+            const title = currentCard.dataset.title;
+
+            if (!confirm(`Are you sure you want to void "${title}"? This action cannot be undone.`)) return;
+
+            try {
+                let data = JSON.parse(localStorage.getItem(collection) || '[]');
+                let itemIndex = -1;
+
+                if (collection === 'transactions' || collection === 'debts') {
+                    itemIndex = data.findIndex(item => item.id == id);
+                } else {
+                    itemIndex = data.findIndex(item => item.id == id || item.timestamp == id);
+                }
+
+                if (itemIndex === -1) {
+                    alert('Record not found.');
+                    return;
+                }
+
+                const item = data[itemIndex];
+                if (item.voided) {
+                    alert('Already voided.');
+                    return;
+                }
+
+                item.voided = true;
+
+                if (type === 'sales' && collection === 'transactions' && item.items) {
+                    let products = JSON.parse(localStorage.getItem('products') || '[]');
+                    item.items.forEach(soldItem => {
+                        const product = products.find(p => p.id == soldItem.id);
+                        if (product) product.stock = (product.stock || 0) + soldItem.qty;
+                    });
+                    localStorage.setItem('products', JSON.stringify(products));
+                }
+
+                localStorage.setItem(collection, JSON.stringify(data));
+                showToast('Transaction voided');
+                closeRecordModal();
+                loadAllLogs();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ================== EXPORT MODAL ==================
+        function openExportModal() {
+            // Get all unique log types from allLogs
+            const types = [...new Set(allLogs.map(log => log.type))];
+            // Ensure we always show all possible categories (even if empty)
+            const allPossible = ['sales', 'security', 'inventory', 'finance', 'subscription', 'expenses', 'uploads', 'waste'];
+            const categories = [...new Set([...types, ...allPossible])].filter(t => t !== 'void');
+
+            const container = document.getElementById('exportCategoryList');
+            // Build checkboxes for each normal category
+            let html = categories.map(cat => `
+        <label class="flex items-center gap-2 p-2 rounded-lg border dark:border-gray-700 border-gray-200 cursor-pointer text-xs">
+            <input type="checkbox" value="${cat}" class="category-checkbox normal-cat" checked>
+            <span>${cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+        </label>
+    `).join('');
+
+            // Add the special Void checkbox
+            html += `
+        <label class="flex items-center gap-2 p-2 rounded-lg border dark:border-gray-700 border-gray-200 cursor-pointer text-xs">
+            <input type="checkbox" value="void" id="voidCheckbox" class="category-checkbox">
+            <span class="text-brand-danger font-bold">Void (all voided)</span>
+        </label>
+    `;
+            container.innerHTML = html;
+
+            // Attach change event to Void checkbox: uncheck all normal categories when Void is checked
+            document.getElementById('voidCheckbox').addEventListener('change', function (e) {
+                if (this.checked) {
+                    document.querySelectorAll('.normal-cat').forEach(cb => cb.checked = false);
+                }
+            });
+
+            // Attach change events to normal category checkboxes: uncheck Void when any normal is checked
+            document.querySelectorAll('.normal-cat').forEach(cb => {
+                cb.addEventListener('change', function (e) {
+                    if (this.checked) {
+                        const voidCb = document.getElementById('voidCheckbox');
+                        if (voidCb) voidCb.checked = false;
+                    }
+                });
+            });
+
+            document.getElementById('exportModal').style.display = 'flex';
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+
+        function selectAllExportCategories(select) {
+            // Check/uncheck all boxes
+            document.querySelectorAll('#exportCategoryList input[type="checkbox"]').forEach(cb => cb.checked = select);
+            // If selecting all, force Void to be unchecked (mutual exclusivity)
+            if (select) {
+                const voidCb = document.getElementById('voidCheckbox');
+                if (voidCb) voidCb.checked = false;
+            }
+        }
+
+        function downloadSelectedCategories() {
+            const checkboxes = document.querySelectorAll('#exportCategoryList input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                alert('Select at least one category.');
+                return;
+            }
+
+            const selected = Array.from(checkboxes).map(cb => cb.value);
+            let logsToExport = [];
+
+            if (selected.includes('void')) {
+                // Include all voided items
+                logsToExport.push(...allLogs.filter(log => log.voided === true));
+                selected.splice(selected.indexOf('void'), 1); // remove 'void' for regular categories
+            }
+
+            // Include non-voided logs from other selected categories
+            if (selected.length > 0) {
+                logsToExport.push(...allLogs.filter(log => !log.voided && selected.includes(log.type)));
+            }
+
+            if (logsToExport.length === 0) {
+                alert('No logs found for selected categories.');
+                return;
+            }
+
+            // Sort by time descending
+            logsToExport.sort((a, b) => parseDateSafely(b.time) - parseDateSafely(a.time));
+
+            // Generate PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const categoryNames = selected.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
+            const title = `Mizana Pro - ${categoryNames}${selected.includes('void') ? (categoryNames ? ', Void' : 'Void') : ''}`;
+
+            doc.setFontSize(16);
+            doc.text(title, 14, 22);
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+
+            const tableData = logsToExport.map(log => {
+                const date = new Date(parseDateSafely(log.time)).toLocaleString();
+                return [log.type, log.title, log.description, log.amount, date, log.voided ? 'Voided' : ''];
+            });
+
+            let totalIn = 0, totalOut = 0;
+            logsToExport.forEach(log => {
+                const amt = parseFloat(log.amount.replace(/[₦,+]/g, '')) || 0;
+                if (log.amount.startsWith('+')) totalIn += amt;
+                else if (log.amount.startsWith('-')) totalOut += amt;
+            });
+
+            doc.autoTable({
+                startY: 35,
+                head: [['Type', 'Title', 'Description', 'Amount', 'Time', 'Status']],
+                body: tableData,
+                foot: [[
+                    { content: 'Totals', colSpan: 2, styles: { halign: 'right', fontStyle: 'bold' } },
+                    { content: `In: ₦${totalIn.toLocaleString()}  Out: ₦${totalOut.toLocaleString()}`, colSpan: 4, styles: { fontStyle: 'bold' } }
+                ]],
+                theme: 'striped',
+                headStyles: { fillColor: [19, 43, 119] },
+                footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+            });
+
+            doc.save(`mizana-export-${Date.now()}.pdf`);
+            closeExportModal();
+        }
+
+        // ================== TOAST ==================
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2000);
+        }
+
+        // ================== EVENT LISTENERS ==================
+        document.getElementById('logContainer').addEventListener('click', (e) => {
+            const card = e.target.closest('.log-card');
+            if (card) showRecordDetail(card);
+        });
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('recordModal');
+            if (event.target === modal) closeRecordModal();
+            const exportModal = document.getElementById('exportModal');
+            if (event.target === exportModal) closeExportModal();
+        };
+
+        // ================== INIT ==================
+        loadAllLogs();
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'mizana_settings' || e.key.includes('transactions') || e.key.includes('expenses') || e.key.includes('debts') || e.key.includes('priceLogs') || e.key.includes('subscriptions') || e.key.includes('uploadHistory')) {
+                loadAllLogs();
+            }
+        });
+    </script>
+</body>
+
+</html>

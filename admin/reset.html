@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password - Mizana Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../CSS/admin/login.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="../index.html" class="logo">
+            <img src="../asset/logo.png" alt="">
+            <span>MIZANA PRO</span>
+        </a>
+        <div class="nav-links">
+            <a href="../admin/register.html">Register</a>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Reset Password</h2>
+                <p>Don't have an account? <a href="../admin/register.html">Sign up</a></p>
+            </div>
+            <form id="resetForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="resetEmail" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-row">
+                    <label class="checkbox">
+                        I know my password
+                    </label>
+                    <a href="../admin/login.html" class="forgot-link">Log in</a>
+                </div>
+
+                <button type="submit" class="auth-btn">Reset Password</button>
+            </form>
+
+            <!-- Success message (hidden by default) -->
+            <div id="successMessage" class="mt-4 p-3 bg-green-100 text-green-700 rounded-lg text-center hidden">
+                ✅ Password reset email sent! Redirecting to login...
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-gray-100">
+                <div class="flex items-center justify-around opacity-60">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-shield-halved text-green-600 mb-1"></i>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-gray-600">End-to-End Encrypted</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-database text-blue-600 mb-1"></i>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-gray-600">Cloud Synced</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../JS/admin/reset.js" type="module"></script>
+        
+</body>
+</html>

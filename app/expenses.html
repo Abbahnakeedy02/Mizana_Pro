@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Record Expense</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#1a2a40',
+                            accent: '#f39c12',
+                            danger: '#e74c3c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .category-card.active {
+            border-color: #f39c12;
+            background-color: rgba(243, 156, 18, 0.1);
+        }
+
+        .payment-pill.active {
+            background-color: #1a2a40;
+            color: white;
+        }
+
+        .dark .payment-pill.active {
+            background-color: #f39c12;
+            color: #1a2a40;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .transition-all {
+            transition: all 0.2s ease;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()"
+                    class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Add Expense</h1>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] text-gray-500 uppercase font-black">Today's Total</p>
+                <p id="todayTotal" class="text-brand-danger font-black">₦0</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-xl mx-auto space-y-8 pb-36">
+        <!-- Amount Input -->
+        <section class="text-center py-6">
+            <label class="text-xs font-black text-gray-400 uppercase tracking-widest block mb-2">Amount Spent</label>
+            <div class="flex items-center justify-center gap-2">
+                <span class="text-3xl font-black text-gray-400">₦</span>
+                <input type="number" id="expAmount" placeholder="0.00"
+                    class="bg-transparent text-5xl font-black outline-none w-2/3 text-center placeholder:text-gray-200 dark:placeholder:text-gray-700"
+                    oninput="updateTodayTotal()">
+            </div>
+        </section>
+
+        <!-- Category Grid -->
+        <section class="space-y-3">
+            <label class="text-xs font-black text-gray-400 uppercase tracking-widest">Select Category</label>
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="selectCat(this)"
+                    class="category-card p-4 rounded-2xl border dark:border-gray-700 bg-white dark:bg-gray-800 border-gray-200 flex flex-col items-center gap-2 transition active:scale-95"
+                    data-category="Transport">
+                    <i class="fas fa-truck text-blue-500"></i>
+                    <span class="text-[10px] font-bold">Transport</span>
+                </button>
+                <button onclick="selectCat(this)"
+                    class="category-card p-4 rounded-2xl border dark:border-gray-700 bg-white dark:bg-gray-800 border-gray-200 flex flex-col items-center gap-2 transition active:scale-95"
+                    data-category="Utilities">
+                    <i class="fas fa-bolt text-yellow-500"></i>
+                    <span class="text-[10px] font-bold">Utilities</span>
+                </button>
+                <button onclick="selectCat(this)"
+                    class="category-card p-4 rounded-2xl border dark:border-gray-700 bg-white dark:bg-gray-800 border-gray-200 flex flex-col items-center gap-2 transition active:scale-95"
+                    data-category="Food/Staff">
+                    <i class="fas fa-hamburger text-orange-500"></i>
+                    <span class="text-[10px] font-bold">Food/Staff</span>
+                </button>
+                <button onclick="selectCat(this)"
+                    class="category-card p-4 rounded-2xl border dark:border-gray-700 bg-white dark:bg-gray-800 border-gray-200 flex flex-col items-center gap-2 transition active:scale-95"
+                    data-category="Repairs">
+                    <i class="fas fa-tools text-gray-500"></i>
+                    <span class="text-[10px] font-bold">Repairs</span>
+                </button>
+                <button onclick="selectCat(this)"
+                    class="category-card p-4 rounded-2xl border dark:border-gray-700 bg-white dark:bg-gray-800 border-gray-200 flex flex-col items-center gap-2 transition active:scale-95"
+                    data-category="Supplies">
+                    <i class="fas fa-shopping-basket text-purple-500"></i>
+                    <span class="text-[10px] font-bold">Supplies</span>
+                </button>
+                <button onclick="selectCat(this)"
+                    class="category-card p-4 rounded-2xl border dark:border-gray-700 bg-white dark:bg-gray-800 border-gray-200 flex flex-col items-center gap-2 transition active:scale-95"
+                    data-category="Others">
+                    <i class="fas fa-ellipsis-h text-brand-cyan"></i>
+                    <span class="text-[10px] font-bold">Others</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Payment Method -->
+        <section class="space-y-3">
+            <label class="text-xs font-black text-gray-400 uppercase tracking-widest">Payment Method</label>
+            <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-2xl">
+                <button onclick="selectPay(this)"
+                    class="payment-pill active flex-1 py-3 rounded-xl text-xs font-bold transition"
+                    data-payment="Cash">Cash at Hand</button>
+                <button onclick="selectPay(this)"
+                    class="payment-pill flex-1 py-3 rounded-xl text-xs font-bold transition text-gray-500"
+                    data-payment="Transfer">Bank Transfer</button>
+            </div>
+            <p class="text-[10px] text-gray-500 text-center italic">"Cash at Hand" will deduct from your current drawer
+                total.</p>
+        </section>
+
+        <!-- Notes & Receipt -->
+        <section class="space-y-3">
+            <label class="text-xs font-black text-gray-400 uppercase tracking-widest">Note & Receipt</label>
+            <div class="relative">
+                <textarea id="expNotes" placeholder="What was this expense for?"
+                    class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl p-4 pt-4 text-sm outline-none focus:ring-2 focus:ring-brand-accent h-24 resize-none"></textarea>
+                <button id="cameraBtn"
+                    class="absolute bottom-3 right-3 w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-400 hover:text-brand-accent transition">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Recent Expenses (now filters out voided) -->
+        <section class="space-y-3">
+            <div class="flex items-center justify-between">
+                <label class="text-xs font-black text-gray-400 uppercase tracking-widest">Recent Expenses</label>
+                <button onclick="clearRecentExpenses()" class="text-[10px] text-brand-danger underline">Clear</button>
+            </div>
+            <div id="recentExpensesList" class="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
+                <!-- Recent expenses will appear here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Fixed Bottom Button -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-800 border-gray-200">
+        <button onclick="saveExpense()"
+            class="w-full bg-brand-main dark:bg-brand-accent dark:text-brand-main text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">
+            SAVE EXPENSE
+        </button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg z-50 hidden">
+        Expense saved successfully
+    </div>
+
+    <script>
+        // ================== DARK MODE ==================
+        const prefersDark = localStorage.getItem('darkMode') === 'true';
+        if (prefersDark) document.body.classList.add('dark');
+
+        // ================== STATE ==================
+        let selectedCategory = '';
+        let selectedPayment = 'Cash'; // default
+        let expenses = []; // array of expense objects
+
+        // Load expenses from localStorage (filter out voided)
+        function loadExpenses() {
+            const saved = localStorage.getItem('expenses');
+            if (saved) {
+                expenses = JSON.parse(saved);
+            } else {
+                // Sample data with timestamps (non-voided)
+                const now = new Date();
+                const yesterday = new Date(now);
+                yesterday.setDate(now.getDate() - 1);
+                expenses = [
+                    { amount: 2500, category: 'Transport', payment: 'Cash', notes: 'Taxi to market', timestamp: now.toISOString(), voided: false },
+                    { amount: 4800, category: 'Food/Staff', payment: 'Transfer', notes: 'Lunch for staff', timestamp: yesterday.toISOString(), voided: false }
+                ];
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+            }
+            // For UI, we only care about non-voided expenses
+            updateRecentExpenses();
+            updateTodayTotal();
+        }
+
+        // Save expenses to localStorage
+        function saveExpenses() {
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            updateRecentExpenses();
+            updateTodayTotal();
+        }
+
+        // Helper to format timestamp for display
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const isToday = date.toDateString() === now.toDateString();
+            if (isToday) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
+        // Update the recent expenses list (only non-voided)
+        function updateRecentExpenses() {
+            const list = document.getElementById('recentExpensesList');
+            const activeExpenses = expenses.filter(e => !e.voided); // exclude voided
+            if (activeExpenses.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-4">No recent expenses</p>';
+                return;
+            }
+            // Show last 5 active expenses (most recent first)
+            const recent = [...activeExpenses].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+            list.innerHTML = recent.map(exp => `
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-xl flex items-center justify-between border dark:border-gray-700 border-gray-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-brand-danger/10 rounded-lg flex items-center justify-center text-brand-danger">
+                            <i class="fas fa-receipt text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-xs">${exp.category}</p>
+                            <p class="text-[10px] text-gray-500">${exp.notes || 'No notes'}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-xs text-brand-danger">-₦${exp.amount.toLocaleString()}</p>
+                        <p class="text-[8px] text-gray-400">${formatTimestamp(exp.timestamp)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Calculate today's total using timestamp (only non-voided)
+        function updateTodayTotal() {
+            const todayStr = new Date().toDateString();
+            const total = expenses
+                .filter(exp => !exp.voided && new Date(exp.timestamp).toDateString() === todayStr)
+                .reduce((sum, exp) => sum + exp.amount, 0);
+            document.getElementById('todayTotal').innerText = '₦' + total.toLocaleString();
+        }
+
+        // ================== CATEGORY SELECTION ==================
+        function selectCat(el) {
+            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            selectedCategory = el.getAttribute('data-category');
+        }
+
+        // ================== PAYMENT SELECTION ==================
+        function selectPay(el) {
+            document.querySelectorAll('.payment-pill').forEach(p => {
+                p.classList.remove('active');
+                p.classList.add('text-gray-500');
+            });
+            el.classList.add('active');
+            el.classList.remove('text-gray-500');
+            selectedPayment = el.getAttribute('data-payment');
+        }
+
+        // ================== SAVE EXPENSE ==================
+        function saveExpense() {
+            const amount = parseFloat(document.getElementById('expAmount').value);
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+            if (!selectedCategory) {
+                alert('Please select a category.');
+                return;
+            }
+            const notes = document.getElementById('expNotes').value;
+
+            const newExpense = {
+                amount,
+                category: selectedCategory,
+                payment: selectedPayment,
+                notes,
+                timestamp: new Date().toISOString(),
+                voided: false  // new expenses start as non-voided
+            };
+
+            expenses.push(newExpense);
+            saveExpenses();
+
+            // Show toast
+            const toast = document.getElementById('toast');
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+
+            // Reset form (keep category and payment as selected)
+            document.getElementById('expAmount').value = '';
+            document.getElementById('expNotes').value = '';
+        }
+
+        // ================== CLEAR RECENT (for demo) ==================
+        function clearRecentExpenses() {
+            if (confirm('Clear all expense history?')) {
+                expenses = [];
+                saveExpenses();
+            }
+        }
+
+        // ================== RECEIPT CAMERA (placeholder) ==================
+        document.getElementById('cameraBtn').addEventListener('click', function () {
+            alert('Camera feature coming soon!');
+        });
+
+        // ================== INIT ==================
+        loadExpenses();
+
+        // Auto-focus amount on load
+        window.onload = () => document.getElementById('expAmount').focus();
+
+        // Listen for external changes (e.g., void from another tab)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'expenses') {
+                loadExpenses(); // reload when expenses change
+            }
+            if (e.key === 'mizana_settings') {
+                // Reload settings and reapply
+                loadAppSettings();
+                if (typeof renderProducts === 'function') renderProducts();
+            }
+        });
+        const allPriceLogs = JSON.parse(localStorage.getItem('priceLogs') || '[]');
+        const activePriceLogs = allPriceLogs.filter(p => !p.voided);
+        const allDebts = JSON.parse(localStorage.getItem('debts') || '[]');
+        const activeDebts = allDebts.filter(d => !d.voided);
+        const allUploads = JSON.parse(localStorage.getItem('uploadHistory') || '[]');
+        const activeUploads = allUploads.filter(u => !u.voided);
+    </script>
+</body>
+
+</html>

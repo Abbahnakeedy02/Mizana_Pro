@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Finance</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#1a2a40',
+                            accent: '#f39c12',
+                            danger: '#e74c3c',
+                            success: '#2ecc71'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Finance</h1>
+            </div>
+            <button id="darkModeToggle" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-3xl mx-auto space-y-6 pb-24">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border-l-4 border-l-green-500">
+                <p class="text-xs text-gray-400 uppercase">Total Received</p>
+                <p id="totalReceived" class="text-2xl font-black text-brand-main dark:text-white">₦0</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border-l-4 border-l-brand-accent">
+                <p class="text-xs text-gray-400 uppercase">Pending Debts</p>
+                <p id="pendingDebts" class="text-2xl font-black text-brand-main dark:text-white">₦0</p>
+            </div>
+        </div>
+
+        <!-- Customer Payments / Transactions -->
+        <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mt-4">Recent Customer Payments</h2>
+        <div id="paymentList" class="space-y-3">
+            <!-- Injected -->
+        </div>
+    </main>
+
+    <script>
+        // Dark mode
+        (function() {
+            const darkToggle = document.getElementById('darkModeToggle');
+            const prefersDark = localStorage.getItem('darkMode') === 'true';
+            if (prefersDark) document.body.classList.add('dark');
+            darkToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            });
+        })();
+
+        function loadFinance() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const debts = JSON.parse(localStorage.getItem('debts') || '[]');
+
+            // Total received from cash/transfer sales (not loan)
+            const totalReceived = transactions
+                .filter(t => t.paymentMethod !== 'Loan')
+                .reduce((sum, t) => sum + (t.total || 0), 0);
+
+            // Pending debts total
+            const pendingTotal = debts
+                .filter(d => d.status === 'pending')
+                .reduce((sum, d) => sum + (d.amount || 0), 0);
+
+            document.getElementById('totalReceived').innerText = '₦' + totalReceived.toLocaleString();
+            document.getElementById('pendingDebts').innerText = '₦' + pendingTotal.toLocaleString();
+
+            // Combine sales and debt payments into one list
+            const payments = [
+                ...transactions.map(t => ({
+                    type: 'sale',
+                    customer: t.customerName || 'Walk-in',
+                    amount: t.total,
+                    method: t.paymentMethod,
+                    date: t.timestamp,
+                    id: t.id
+                })),
+                ...debts.filter(d => d.status === 'paid').map(d => ({
+                    type: 'debt',
+                    customer: d.customerName,
+                    amount: d.amount,
+                    method: 'Debt Payment',
+                    date: d.paidDate || d.createdAt,
+                    id: d.id
+                }))
+            ].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
+
+            const list = document.getElementById('paymentList');
+            if (payments.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-10">No payment records</p>';
+                return;
+            }
+            list.innerHTML = payments.map(p => `
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold dark:text-white">${p.customer}</h3>
+                            <p class="text-xs text-gray-500">${p.method} · ${new Date(p.date).toLocaleDateString()}</p>
+                        </div>
+                        <span class="text-brand-success font-black">+₦${(p.amount || 0).toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadFinance();
+        window.addEventListener('storage', loadFinance);
+    </script>
+</body>
+</html>

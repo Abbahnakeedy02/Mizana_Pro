@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Price Log</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#132B77',
+                            accent: '#0A89A4',
+                            danger: '#e74c3c',
+                            success: '#2ecc71'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .filter-chip.active {
+            background-color: #0A89A4;
+            color: white;
+            border-color: #0A89A4;
+        }
+        /* Hide scrollbar for chips */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Price Change Log</h1>
+            </div>
+            <!-- Date range filter (simple dropdown) -->
+            <select id="dateRange" class="bg-gray-100 dark:bg-gray-700 border-none rounded-xl py-2 px-3 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-accent">
+                <option>All Time</option>
+                <option>Today</option>
+                <option>This Week</option>
+                <option>This Month</option>
+            </select>
+        </div>
+
+        <!-- Search bar -->
+        <div class="relative mb-4">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" id="searchInput" placeholder="Search by product name or SKU..." 
+                class="w-full bg-gray-100 dark:bg-gray-700 border-none rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-brand-accent transition-all text-sm">
+        </div>
+
+        <!-- Filter chips (scrollable) -->
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            <button onclick="filterByTime('all')" class="filter-chip active shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">All</button>
+            <button onclick="filterByTime('today')" class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Today</button>
+            <button onclick="filterByTime('week')" class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">This Week</button>
+            <button onclick="filterByTime('month')" class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">This Month</button>
+        </div>
+    </header>
+
+    <!-- Price log list -->
+    <main id="logList" class="p-4 max-w-3xl mx-auto space-y-3 pb-24">
+        <!-- Log entries will be injected here -->
+    </main>
+
+    <!-- Bottom navigation (matches inventory page) -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t dark:border-gray-800 border-gray-200 flex justify-around">
+        <button onclick="window.location.href='inventory.html'" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fas fa-boxes text-xl"></i>
+            <span class="text-[10px] font-black uppercase">Stock</span>
+        </button>
+        <button onclick="window.location.href='bulk-import.html'" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fas fa-file-import text-xl"></i>
+            <span class="text-[10px] font-black uppercase">Bulk Import</span>
+        </button>
+        <button onclick="window.location.href='price-log.html'" class="flex flex-col items-center gap-1 text-brand-accent">
+            <i class="fas fa-exchange-alt text-xl"></i>
+            <span class="text-[10px] font-black uppercase">Price Logs</span>
+        </button>
+        <button onclick="window.location.href='waste.html'" class="flex flex-col items-center gap-1 text-red-500">
+            <i class="fas fa-trash-alt text-xl"></i>
+            <span class="text-[10px] font-black uppercase">Waste</span>
+        </button>
+    </div>
+
+    <script>
+        // ================== DARK MODE ==================
+        const prefersDark = localStorage.getItem('darkMode') === 'true';
+        if (prefersDark) document.body.classList.add('dark');
+
+        // ================== LOAD REAL PRICE LOGS ==================
+        let priceLogs = [];
+        function loadPriceLogs() {
+            const stored = localStorage.getItem('priceLogs');
+            priceLogs = stored ? JSON.parse(stored) : [];
+            // Sort by date descending (most recent first)
+            priceLogs.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            filteredLogs = [...priceLogs];
+            renderLogs();
+        }
+
+        let filteredLogs = [];
+        let currentTimeFilter = 'all';
+        let searchTerm = '';
+
+        // ================== RENDER ==================
+        function renderLogs() {
+            const container = document.getElementById('logList');
+            if (filteredLogs.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-10">No price changes found</p>';
+                return;
+            }
+            container.innerHTML = filteredLogs.map(log => {
+                const dateObj = new Date(log.timestamp);
+                const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateStr = dateObj.toLocaleDateString();
+                const priceDiff = log.newPrice - log.oldPrice;
+                const diffClass = priceDiff > 0 ? 'text-brand-success' : 'text-brand-danger';
+                // Use stored image or default
+                const img = log.img || '📦';
+                return `
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:border-brand-accent/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center text-2xl">${img}</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-sm dark:text-white">${log.productName}</h3>
+                                    <p class="text-[10px] text-gray-500 dark:text-gray-400">${log.sku ? 'SKU: ' + log.sku : ''}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] text-gray-500 dark:text-gray-400">${dateStr} · ${timeStr}</p>
+                                </div>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2 text-sm">
+                                <span class="text-gray-500 line-through">₦${(log.oldPrice || 0).toLocaleString()}</span>
+                                <i class="fas fa-arrow-right text-xs text-gray-400"></i>
+                                <span class="font-bold text-brand-accent">₦${(log.newPrice || 0).toLocaleString()}</span>
+                                <span class="text-xs ${diffClass}">(${priceDiff > 0 ? '+' : ''}${priceDiff.toLocaleString()})</span>
+                            </div>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Changed by: ${log.changedBy || 'staff'}</p>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // ================== SEARCH ==================
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            searchTerm = e.target.value.toLowerCase();
+            applyFilters();
+        });
+
+        // ================== TIME FILTER ==================
+        function filterByTime(range) {
+            currentTimeFilter = range;
+            // Update chips active state
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFilters();
+        }
+
+        // Date range filter logic
+        function isWithinRange(dateStr, range) {
+            if (range === 'all') return true;
+            const logDate = new Date(dateStr);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            if (range === 'today') {
+                return logDate >= today;
+            }
+            if (range === 'week') {
+                const weekAgo = new Date(today);
+                weekAgo.setDate(today.getDate() - 7);
+                return logDate >= weekAgo;
+            }
+            if (range === 'month') {
+                const monthAgo = new Date(today);
+                monthAgo.setMonth(today.getMonth() - 1);
+                return logDate >= monthAgo;
+            }
+            return true;
+        }
+
+        function applyFilters() {
+            filteredLogs = priceLogs.filter(log => {
+                const matchesSearch = log.productName.toLowerCase().includes(searchTerm) || 
+                                      (log.sku && log.sku.toLowerCase().includes(searchTerm));
+                const matchesTime = isWithinRange(log.timestamp, currentTimeFilter);
+                return matchesSearch && matchesTime;
+            });
+            renderLogs();
+        }
+
+        // ================== DATE RANGE DROPDOWN ==================
+        document.getElementById('dateRange').addEventListener('change', function(e) {
+            currentTimeFilter = e.target.value.toLowerCase().replace(' ', '');
+            applyFilters();
+        });
+
+        // ================== STORAGE EVENT ==================
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'priceLogs') {
+                loadPriceLogs();
+            }
+        });
+
+        // ================== INIT ==================
+        loadPriceLogs();
+    </script>
+</body>
+</html>

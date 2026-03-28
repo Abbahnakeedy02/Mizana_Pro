@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Bulk Import</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#1a2a40',
+                            accent: '#f39c12',
+                            danger: '#e74c3c',
+                            success: '#2ecc71'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth transitions */
+        .transition-all { transition: all 0.2s ease; }
+        /* Hide scrollbar for preview table on mobile */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center gap-4">
+            <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold dark:text-white">Bulk Import Products</h1>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-3xl mx-auto space-y-8 pb-24">
+        <!-- Step indicators (optional) -->
+        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider">
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 bg-brand-accent text-white rounded-full flex items-center justify-center">1</span>
+                <span class="text-gray-600 dark:text-gray-300">Download Template</span>
+            </div>
+            <div class="w-8 h-px bg-gray-300 dark:bg-gray-700"></div>
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 bg-gray-200 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center">2</span>
+                <span class="text-gray-400">Upload File</span>
+            </div>
+            <div class="w-8 h-px bg-gray-300 dark:bg-gray-700"></div>
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 bg-gray-200 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center">3</span>
+                <span class="text-gray-400">Review & Confirm</span>
+            </div>
+        </div>
+
+        <!-- Step 1: Download template -->
+        <section class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-brand-accent/10 rounded-2xl flex items-center justify-center text-brand-accent text-xl">
+                    <i class="fas fa-file-csv"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold dark:text-white">Download CSV Template</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Contains required columns: Name, Price, Category, Stock, Barcode (optional)</p>
+                </div>
+                <button onclick="downloadTemplate()" class="bg-brand-main dark:bg-brand-accent dark:text-brand-main text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg hover:bg-opacity-90 transition">
+                    <i class="fas fa-download mr-2"></i>Template
+                </button>
+            </div>
+        </section>
+
+        <!-- Step 2: Upload file -->
+        <section class="space-y-3">
+            <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Upload Your File</h3>
+            <div onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-brand-accent transition bg-white dark:bg-gray-800">
+                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400"></i>
+                <p class="font-bold text-sm text-gray-600 dark:text-gray-300">Click to select or drag & drop</p>
+                <p class="text-[10px] text-gray-400">CSV or Excel files (max 10MB)</p>
+            </div>
+            <input type="file" id="fileInput" class="hidden" accept=".csv,.xls,.xlsx" onchange="handleFileSelect(this)">
+
+            <!-- Selected file preview (hidden initially) -->
+            <div id="fileInfo" class="hidden bg-brand-accent/5 border border-brand-accent/20 rounded-2xl p-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-file-csv text-brand-accent"></i>
+                    <div>
+                        <p id="fileName" class="font-bold text-sm">products.csv</p>
+                        <p id="fileSize" class="text-[10px] text-gray-500">2.4 MB</p>
+                    </div>
+                </div>
+                <button onclick="removeFile()" class="text-xs text-brand-danger font-bold">Remove</button>
+            </div>
+        </section>
+
+        <!-- Step 3: Preview (appears after file is selected) -->
+        <section id="previewSection" class="hidden space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Preview (First 5 Rows)</h3>
+                <p class="text-[10px] text-gray-500">12 products detected</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
+                        <tr>
+                            <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Name</th>
+                            <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Price</th>
+                            <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Category</th>
+                            <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Stock</th>
+                            <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Barcode</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewTableBody">
+                        <!-- Preview rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Submit button (disabled until file selected) -->
+        <button id="importBtn" onclick="startImport()" disabled class="w-full bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 py-4 rounded-2xl font-black text-lg shadow-lg cursor-not-allowed transition-all">
+            IMPORT PRODUCTS
+        </button>
+
+        <!-- Note -->
+        <p class="text-center text-[10px] text-gray-500 italic">
+            <i class="fas fa-info-circle mr-1"></i> Duplicate SKUs will be updated; new products will be created.
+        </p>
+    </main>
+
+    <!-- Bottom navigation (optional, matches inventory page) -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-900/80 border-gray-200 backdrop-blur-lg border-t dark:border-gray-800 flex justify-around">
+        <button onclick="window.location.href='inventory.html'" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fas fa-boxes text-xl"></i>
+            <span class="text-[10px] font-black uppercase">Stock</span>
+        </button>
+        <button onclick="window.location.href='bulk-import.html'" class="flex flex-col items-center gap-1 text-brand-accent">
+            <i class="fas fa-file-import text-xl"></i>
+            <span class="text-[10px] font-black uppercase">Bulk Import</span>
+        </button>
+        <button onclick="window.location.href='price-logs.html'" class="flex flex-col items-center gap-1 text-gray-400">
+            <i class="fas fa-exchange-alt text-xl"></i>
+            <span class="text-[10px] font-black uppercase">Price Logs</span>
+        </button>
+        <button onclick="window.location.href='damage.html'" class="flex flex-col items-center gap-1 text-red-500">
+            <i class="fas fa-trash-alt text-xl"></i>
+            <span class="text-[10px] font-black uppercase">Waste</span>
+        </button>
+    </div>
+
+    <!-- Toast for notifications -->
+    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg z-50 hidden">
+        Import started (simulated)
+    </div>
+
+    <script>
+        // ================== DARK MODE ==================
+        const prefersDark = localStorage.getItem('darkMode') === 'true';
+        if (prefersDark) document.body.classList.add('dark');
+
+        // ================== MOCK DATA ==================
+        function downloadTemplate() {
+            // Simulate template download
+            alert('Template download started (sample CSV)');
+        }
+
+        function handleFileSelect(input) {
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                document.getElementById('fileName').innerText = file.name;
+                document.getElementById('fileSize').innerText = (file.size / 1024).toFixed(1) + ' KB';
+                document.getElementById('fileInfo').classList.remove('hidden');
+
+                // Enable import button
+                document.getElementById('importBtn').disabled = false;
+                document.getElementById('importBtn').classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'cursor-not-allowed');
+                document.getElementById('importBtn').classList.add('bg-brand-main', 'dark:bg-brand-accent', 'dark:text-brand-main', 'text-white', 'hover:bg-opacity-90');
+
+                // Show preview section with mock data
+                document.getElementById('previewSection').classList.remove('hidden');
+                loadPreview();
+            }
+        }
+
+        function removeFile() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').classList.add('hidden');
+            document.getElementById('previewSection').classList.add('hidden');
+            document.getElementById('importBtn').disabled = true;
+            document.getElementById('importBtn').classList.remove('bg-brand-main', 'dark:bg-brand-accent', 'dark:text-brand-main', 'text-white', 'hover:bg-opacity-90');
+            document.getElementById('importBtn').classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'cursor-not-allowed');
+        }
+
+        function loadPreview() {
+            // Mock preview data
+            const previewData = [
+                { name: "Dangote Sugar", price: "45000", category: "Grains", stock: "15", barcode: "5901234123459" },
+                { name: "Peak Milk 400g", price: "2800", category: "Beverages", stock: "8", barcode: "5901234123458" },
+                { name: "Gino Tomato Paste", price: "600", category: "Canned", stock: "25", barcode: "5901234123461" },
+                { name: "Indomie Noodles", price: "500", category: "Other", stock: "40", barcode: "5901234123462" },
+                { name: "Power Oil", price: "3500", category: "Other", stock: "6", barcode: "5901234123463" }
+            ];
+            const tbody = document.getElementById('previewTableBody');
+            tbody.innerHTML = previewData.map(row => `
+                <tr class="border-b dark:border-gray-700 last:border-0">
+                    <td class="p-3 text-xs">${row.name}</td>
+                    <td class="p-3 text-xs">₦${row.price}</td>
+                    <td class="p-3 text-xs">${row.category}</td>
+                    <td class="p-3 text-xs">${row.stock}</td>
+                    <td class="p-3 text-xs font-mono">${row.barcode}</td>
+                </tr>
+            `).join('');
+        }
+
+        function startImport() {
+            showToast('Import started – this is a simulation');
+            // In a real app, you'd process the file and update inventory
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+    </script>
+</body>
+</html>

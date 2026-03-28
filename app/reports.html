@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Dev Support</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#1a2a40',
+                            accent: '#f39c12',
+                            danger: '#e74c3c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .report-type.active {
+            border-color: #f39c12;
+            background-color: rgba(243, 156, 18, 0.1);
+            transform: translateY(-2px);
+        }
+        .success-animation { animation: scaleIn 0.5s ease-out; }
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center gap-4">
+            <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold dark:text-white">Feedback & Support</h1>
+        </div>
+    </header>
+
+    <main id="formContainer" class="p-4 max-w-xl mx-auto space-y-8 pb-24">
+        <!-- Hero card -->
+        <div class="bg-brand-main dark:bg-gray-800 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
+            <i class="fas fa-tools absolute right-[-10px] bottom-[-10px] text-8xl opacity-10 rotate-12"></i>
+            <h2 class="text-2xl font-black mb-1">Found a glitch?</h2>
+            <p class="text-sm opacity-80">Help us sharpen Mizana Pro. Every report is reviewed personally by our dev team.</p>
+        </div>
+
+        <!-- Report type selector -->
+        <section class="space-y-3">
+            <label class="text-xs font-black text-gray-400 uppercase tracking-widest">What's happening?</label>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="selectType(this)" class="report-type p-4 rounded-2xl border-2 dark:border-gray-700 border-gray-200 bg-white dark:bg-gray-800 flex flex-col items-start gap-2 transition" data-type="bug">
+                    <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-brand-danger flex items-center justify-center"><i class="fas fa-bug"></i></div>
+                    <span class="font-bold text-sm">Report a Bug</span>
+                </button>
+                <button onclick="selectType(this)" class="report-type p-4 rounded-2xl border-2 dark:border-gray-700 border-gray-200 bg-white dark:bg-gray-800 flex flex-col items-start gap-2 transition" data-type="idea">
+                    <div class="w-8 h-8 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-brand-accent flex items-center justify-center"><i class="fas fa-lightbulb"></i></div>
+                    <span class="font-bold text-sm">New Idea</span>
+                </button>
+                <button onclick="selectType(this)" class="report-type p-4 rounded-2xl border-2 dark:border-gray-700 border-gray-200 bg-white dark:bg-gray-800 flex flex-col items-start gap-2 transition" data-type="security">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center"><i class="fas fa-shield-alt"></i></div>
+                    <span class="font-bold text-sm">Security Issue</span>
+                </button>
+                <button onclick="selectType(this)" class="report-type p-4 rounded-2xl border-2 dark:border-gray-700 border-gray-200 bg-white dark:bg-gray-800 flex flex-col items-start gap-2 transition" data-type="help">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 flex items-center justify-center"><i class="fas fa-question-circle"></i></div>
+                    <span class="font-bold text-sm">General Help</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Subject -->
+        <section class="space-y-4">
+            <div class="space-y-2">
+                <label class="text-xs font-black text-gray-400 uppercase tracking-widest">Subject</label>
+                <input type="text" id="subjectInput" placeholder="Summary of the issue..." 
+                    class="w-full bg-white dark:bg-gray-800 border-2 dark:border-gray-700 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-brand-accent border-transparent transition-all">
+            </div>
+
+            <!-- Detailed description -->
+            <div class="space-y-2">
+                <label class="text-xs font-black text-gray-400 uppercase tracking-widest">Detailed Description</label>
+                <textarea id="descriptionInput" placeholder="Describe exactly what happened or what you'd like to see..." 
+                    class="w-full bg-white dark:bg-gray-800 border-2 dark:border-gray-700 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-brand-accent h-32 resize-none border-transparent transition-all"></textarea>
+            </div>
+
+            <!-- File attachment (simulated) -->
+            <div onclick="simulateFileUpload()" class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand-accent transition">
+                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
+                <p class="text-xs font-bold text-gray-500">Attach Screenshot or Logs</p>
+                <p class="text-[10px] text-gray-400">JPG, PNG, or JSON (Max 5MB)</p>
+            </div>
+            <input type="file" id="fileInput" class="hidden" accept=".jpg,.jpeg,.png,.json">
+
+            <!-- Privacy note -->
+            <div class="p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10 flex gap-3 items-start">
+                <i class="fas fa-user-lock text-blue-500 mt-1"></i>
+                <p class="text-[10px] text-gray-500 leading-relaxed italic">
+                    <strong>Your Privacy Matters:</strong> Any data, logs, or ideas shared through this portal are strictly encrypted and used solely for development. We do not share your business secrets or performance data with third parties.
+                </p>
+            </div>
+        </section>
+
+        <!-- Submit button -->
+        <button onclick="submitReport()" class="w-full bg-brand-main dark:bg-brand-accent dark:text-brand-main text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform">
+            SEND TO DEVELOPERS
+        </button>
+    </main>
+
+    <!-- Success state (hidden initially) -->
+    <div id="successState" class="hidden h-[80vh] flex-col items-center justify-center p-8 text-center success-animation">
+        <div class="w-24 h-24 bg-brand-accent/20 text-brand-accent rounded-full flex items-center justify-center text-4xl mb-6">
+            <i class="fas fa-check"></i>
+        </div>
+        <h2 class="text-3xl font-black mb-2 dark:text-white">Message Sent!</h2>
+        <p class="text-gray-500 dark:text-gray-400 max-w-xs mx-auto">Our developers have received your report. We'll get back to you within 24 hours.</p>
+        <button onclick="resetForm()" class="mt-8 text-brand-accent font-black uppercase text-sm border-b-2 border-brand-accent">Back to Form</button>
+    </div>
+
+    <script>
+        // ================== DARK MODE ==================
+        const prefersDark = localStorage.getItem('darkMode') === 'true';
+        if (prefersDark) document.body.classList.add('dark');
+
+        // ================== STATE ==================
+        let selectedType = null;
+
+        function selectType(el) {
+            document.querySelectorAll('.report-type').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            selectedType = el.getAttribute('data-type');
+        }
+
+        // ================== FILE UPLOAD SIMULATION ==================
+        function simulateFileUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+        // ================== SUBMIT REPORT ==================
+        function submitReport() {
+            const subject = document.getElementById('subjectInput').value.trim();
+            const description = document.getElementById('descriptionInput').value.trim();
+
+            if (!selectedType) {
+                alert('Please select a report type.');
+                return;
+            }
+            if (!subject) {
+                alert('Please enter a subject.');
+                return;
+            }
+            if (!description) {
+                alert('Please enter a description.');
+                return;
+            }
+
+            // Create report object
+            const report = {
+                id: Date.now(),
+                type: selectedType,
+                subject,
+                description,
+                timestamp: new Date().toLocaleString(),
+                status: 'pending'
+            };
+
+            // Save to localStorage (store up to 10 reports)
+            let reports = JSON.parse(localStorage.getItem('supportReports') || '[]');
+            reports.push(report);
+            if (reports.length > 10) reports.shift(); // keep only last 10
+            localStorage.setItem('supportReports', JSON.stringify(reports));
+
+            // Show success state
+            document.getElementById('formContainer').classList.add('hidden');
+            document.getElementById('successState').classList.remove('hidden');
+            document.getElementById('successState').classList.add('flex');
+        }
+
+        // ================== RESET FORM ==================
+        function resetForm() {
+            // Clear inputs
+            document.getElementById('subjectInput').value = '';
+            document.getElementById('descriptionInput').value = '';
+            document.querySelectorAll('.report-type').forEach(t => t.classList.remove('active'));
+            selectedType = null;
+
+            // Hide success, show form
+            document.getElementById('successState').classList.add('hidden');
+            document.getElementById('successState').classList.remove('flex');
+            document.getElementById('formContainer').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

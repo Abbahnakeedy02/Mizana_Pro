@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Debts (Bashi)</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#132B77',
+                            accent: '#0A89A4',
+                            danger: '#e74c3c',
+                            success: '#2ecc71'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .filter-chip.active { background-color: #0A89A4; color: white; border-color: #0A89A4; }
+        .status-badge.paid { background: #2ecc71; color: white; }
+        .status-badge.pending { background: #f39c12; color: white; }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Debts (Bashi)</h1>
+            </div>
+            <div class="flex gap-2">
+                <button id="darkModeToggle" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:inline"></i>
+                </button>
+                <button onclick="addDebt()" class="bg-brand-accent text-brand-main px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2">
+                    <i class="fas fa-plus"></i> New Debt
+                </button>
+            </div>
+        </div>
+
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mt-4">
+            <button onclick="filterDebts('all', this)" class="filter-chip active shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">All</button>
+            <button onclick="filterDebts('pending', this)" class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Pending</button>
+            <button onclick="filterDebts('paid', this)" class="filter-chip shrink-0 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold">Paid</button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-3xl mx-auto space-y-3 pb-24">
+        <div id="debtList" class="space-y-3"></div>
+    </main>
+
+    <div id="debtModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4" onclick="if(event.target===this) closeDebtModal()">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl p-6">
+            <h2 class="text-xl font-black mb-4 dark:text-white">Add New Debt</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Customer Name</label>
+                    <input type="text" id="debtCustomer" class="w-full bg-gray-100 dark:bg-gray-700 border-none rounded-xl p-3 text-sm dark:text-white" placeholder="e.g. Alhaji Musa">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Amount (₦)</label>
+                    <input type="number" id="debtAmount" class="w-full bg-gray-100 dark:bg-gray-700 border-none rounded-xl p-3 text-sm dark:text-white" placeholder="0">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Due Date</label>
+                    <input type="date" id="debtDueDate" class="w-full bg-gray-100 dark:bg-gray-700 border-none rounded-xl p-3 text-sm dark:text-white">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Notes (optional)</label>
+                    <textarea id="debtNotes" class="w-full bg-gray-100 dark:bg-gray-700 border-none rounded-xl p-3 text-sm dark:text-white resize-none h-20" placeholder="Reason for debt..."></textarea>
+                </div>
+                <button onclick="saveDebt()" class="w-full bg-brand-main text-white py-4 rounded-2xl font-bold hover:bg-brand-accent transition">Save Debt</button>
+                <button onclick="closeDebtModal()" class="w-full text-gray-500 font-bold py-2">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode
+        (function() {
+            const darkToggle = document.getElementById('darkModeToggle');
+            const prefersDark = localStorage.getItem('darkMode') === 'true';
+            if (prefersDark) document.body.classList.add('dark');
+            darkToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            });
+        })();
+
+        let debts = [];
+        let currentFilter = 'all';
+
+        function loadDebts() {
+            try {
+                debts = JSON.parse(localStorage.getItem('debts') || '[]');
+            } catch (e) {
+                debts = [];
+            }
+            renderDebts();
+        }
+
+        function saveDebts() {
+            localStorage.setItem('debts', JSON.stringify(debts));
+        }
+
+        function renderDebts() {
+            const container = document.getElementById('debtList');
+            const filtered = debts.filter(d => currentFilter === 'all' || d.status === currentFilter);
+            if (filtered.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-10">No debts found</p>';
+                return;
+            }
+            container.innerHTML = filtered.map(d => `
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold dark:text-white">${d.customerName || 'Anonymous'}</h3>
+                            <p class="text-xs text-gray-500">${d.notes || ''}</p>
+                        </div>
+                        <span class="status-badge ${d.status}">${d.status}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-3">
+                        <div>
+                            <p class="text-lg font-black text-brand-accent">₦${(d.amount || 0).toLocaleString()}</p>
+                            <p class="text-[10px] text-gray-400">Due: ${d.dueDate ? new Date(d.dueDate).toLocaleDateString() : 'Not set'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            ${d.status === 'pending' ? `<button onclick="markPaid('${d.id}')" class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold hover:bg-green-600">Mark Paid</button>` : ''}
+                            <button onclick="deleteDebt('${d.id}')" class="text-red-500 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterDebts(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            renderDebts();
+        }
+
+        function addDebt() {
+            document.getElementById('debtModal').classList.remove('hidden');
+        }
+
+        function closeDebtModal() {
+            document.getElementById('debtModal').classList.add('hidden');
+        }
+
+        function saveDebt() {
+            const customer = document.getElementById('debtCustomer').value.trim();
+            const amount = parseFloat(document.getElementById('debtAmount').value);
+            const dueDate = document.getElementById('debtDueDate').value;
+            const notes = document.getElementById('debtNotes').value.trim();
+
+            if (!customer || !amount || amount <= 0) {
+                alert('Please fill required fields');
+                return;
+            }
+
+            const newDebt = {
+                id: 'debt-' + Date.now(),
+                customerName: customer,
+                amount,
+                dueDate: dueDate || null,
+                notes,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+            debts.push(newDebt);
+            saveDebts();
+            renderDebts();
+            closeDebtModal();
+            document.getElementById('debtCustomer').value = '';
+            document.getElementById('debtAmount').value = '';
+            document.getElementById('debtDueDate').value = '';
+            document.getElementById('debtNotes').value = '';
+        }
+
+        function markPaid(id) {
+            const debt = debts.find(d => d.id === id);
+            if (debt) {
+                debt.status = 'paid';
+                debt.paidDate = new Date().toISOString();
+                saveDebts();
+                renderDebts();
+            }
+        }
+
+        function deleteDebt(id) {
+            if (confirm('Delete this debt?')) {
+                debts = debts.filter(d => d.id !== id);
+                saveDebts();
+                renderDebts();
+            }
+        }
+
+        // Listen for changes in other tabs
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'debts') {
+                loadDebts();
+            }
+        });
+
+        loadDebts();
+    </script>
+</body>
+</html>

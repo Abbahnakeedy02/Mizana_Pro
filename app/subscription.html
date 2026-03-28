@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Subscription</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#132B77',
+                            accent: '#0A89A4',
+                            danger: '#e74c3c',
+                            success: '#2ecc71'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .plan-card { transition: all 0.2s; cursor: pointer; }
+        .plan-card:hover { transform: translateY(-4px); }
+        .plan-card.active { border: 2px solid #0A89A4; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold dark:text-white">Subscription</h1>
+            </div>
+            <button id="darkModeToggle" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-3xl mx-auto space-y-6 pb-24">
+        <!-- Current Plan Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 border-gray-200">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-black dark:text-white">Current Plan</h2>
+                <span id="planStatus" class="bg-brand-accent/10 text-brand-accent px-3 py-1 rounded-full text-xs font-bold">ACTIVE</span>
+            </div>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center border-b dark:border-gray-700 border-gray-200 pb-3">
+                    <span class="text-gray-500 dark:text-gray-400">Plan</span>
+                    <span id="planName" class="font-bold dark:text-white">Loading...</span>
+                </div>
+                <div class="flex justify-between items-center border-b dark:border-gray-700 border-gray-200 pb-3">
+                    <span class="text-gray-500 dark:text-gray-400">Billing Date</span>
+                    <span id="billingDate" class="font-bold dark:text-white">Loading...</span>
+                </div>
+                <div class="flex justify-between items-center border-b dark:border-gray-700 border-gray-200 pb-3">
+                    <span class="text-gray-500 dark:text-gray-400">Status</span>
+                    <span id="planStatusText" class="text-green-500 font-bold">Active</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500 dark:text-gray-400">Payment Method</span>
+                    <span id="paymentMethod" class="font-bold dark:text-white">Not set</span>
+                </div>
+            </div>
+            <button onclick="changePlan()" class="w-full mt-6 bg-brand-main text-white py-4 rounded-2xl font-bold hover:bg-brand-accent transition">
+                Change Plan
+            </button>
+        </div>
+
+        <!-- Available Plans -->
+        <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mt-8">Available Plans</h2>
+        <!-- Plan cards - now 4 columns on desktop -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- 7 Days Free Trial -->
+    <div class="plan-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 hover:border-brand-accent" data-plan="trial">
+        <h3 class="font-black text-lg dark:text-white">7 Days Free Trial</h3>
+        <p class="text-2xl font-black text-brand-accent my-2">₦0</p>
+        <span class="text-xs text-gray-500">No payment required</span>
+        <ul class="text-sm space-y-2 mt-4">
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Full Stock Management</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Staff Performance</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Daily Reports</li>
+        </ul>
+    </div>
+    <!-- Monthly -->
+    <div class="plan-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 hover:border-brand-accent" data-plan="monthly">
+        <h3 class="font-black text-lg dark:text-white">Monthly</h3>
+        <p class="text-2xl font-black text-brand-accent my-2">₦5,000<span class="text-sm text-gray-400">/mo</span></p>
+        <ul class="text-sm space-y-2 mt-4">
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Full Stock Management</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Staff Performance</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Daily Reports</li>
+        </ul>
+    </div>
+    <!-- Annual -->
+    <div class="plan-card bg-white dark:bg-gray-800 rounded-2xl p-5 border-2 border-brand-accent relative overflow-hidden hover:shadow-xl" data-plan="annual">
+        <div class="absolute top-0 right-0 bg-brand-accent text-brand-main px-3 py-1 text-xs font-black rounded-bl-2xl">SAVE 15%</div>
+        <h3 class="font-black text-lg dark:text-white">Annual</h3>
+        <p class="text-2xl font-black text-brand-accent my-2">₦45,000<span class="text-sm text-gray-400">/yr</span></p>
+        <ul class="text-sm space-y-2 mt-4">
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Everything in Monthly</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Priority Support</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Data Export</li>
+        </ul>
+    </div>
+    <!-- Unlimited -->
+    <div class="plan-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 hover:border-brand-accent" data-plan="unlimited">
+        <h3 class="font-black text-lg dark:text-white">Unlimited</h3>
+        <p class="text-2xl font-black text-brand-accent my-2">₦120,000<span class="text-sm text-gray-400">/yr</span></p>
+        <span class="text-xs text-gray-500">Best for large shops</span>
+        <ul class="text-sm space-y-2 mt-4">
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Unlimited products & users</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Advanced analytics</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i>Dedicated support</li>
+        </ul>
+    </div>
+</div>
+
+        <!-- Recent Subscription Activity (optional) -->
+        <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mt-8">Recent Activity</h2>
+        <div class="space-y-2" id="subscriptionActivity">
+            <p class="text-center text-gray-500 py-4">No recent activity</p>
+        </div>
+    </main>
+
+    <script type="module">
+        // ================== Firebase Setup ==================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAixrIUsksJ4xYvYowbl85L4qV6gEAUqUs",
+            authDomain: "mizanapro-2950c.firebaseapp.com",
+            projectId: "mizanapro-2950c",
+            storageBucket: "mizanapro-2950c.firebasestorage.app",
+            messagingSenderId: "754283606394",
+            appId: "1:754283606394:web:ff9a9dabcc1586c1c7e6c3",
+            measurementId: "G-RK9G1WFH5X"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.log('Persistence failed: multiple tabs open');
+            } else if (err.code == 'unimplemented') {
+                console.log('Persistence not supported');
+            }
+        });
+
+        // ================== Dark Mode ==================
+        (function() {
+            const darkToggle = document.getElementById('darkModeToggle');
+            const prefersDark = localStorage.getItem('darkMode') === 'true';
+            if (prefersDark) document.body.classList.add('dark');
+            darkToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            });
+        })();
+
+        // ================== State ==================
+        let selectedPlan = null;
+        let currentUser = null;
+
+        // ================== Load Current Plan from Firestore ==================
+        async function loadUserSubscription(user) {
+            if (!user) return;
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                const sub = data.subscription || {};
+                document.getElementById('planName').innerText = sub.plan || 'No active plan';
+                document.getElementById('billingDate').innerText = sub.billingDate || 'Not set';
+                document.getElementById('planStatusText').innerText = sub.status || 'Inactive';
+                document.getElementById('paymentMethod').innerText = sub.paymentMethod || 'Not set';
+                // If there's an active plan, you might want to disable selection or just show it.
+            }
+        }
+
+        // ================== Plan Selection ==================
+        const planCards = document.querySelectorAll('.plan-card');
+        planCards.forEach(card => {
+            card.addEventListener('click', () => {
+                planCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                selectedPlan = card.dataset.plan; // 'trial', 'monthly', 'annual'
+                console.log('Selected plan:', selectedPlan);
+            });
+        });
+
+        // ================== Subscribe Button ==================
+        document.getElementById('subscribeBtn')?.addEventListener('click', async () => {
+            if (!selectedPlan) {
+                alert('Please select a plan first.');
+                return;
+            }
+            const user = auth.currentUser;
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (!userDoc.exists()) {
+                    alert('User profile not found. Please contact support.');
+                    return;
+                }
+
+                let subscriptionData = {};
+
+                if (selectedPlan === 'trial') {
+                    const now = new Date();
+                    const trialEnd = new Date(now);
+                    trialEnd.setDate(now.getDate() + 7);
+                    subscriptionData = {
+                        plan: '7 Days Free Trial',
+                        status: 'trialing',
+                        startDate: now.toISOString(),
+                        trialEnds: trialEnd.toISOString(),
+                        billingDate: trialEnd.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                    };
+                } else if (selectedPlan === 'monthly') {
+                    // In a real app, you'd integrate payment here.
+                    alert('Monthly payment integration needed. For now, we simulate activation.');
+                    const now = new Date();
+                    const nextBilling = new Date(now);
+                    nextBilling.setMonth(now.getMonth() + 1);
+                    subscriptionData = {
+                        plan: 'Monthly Pro',
+                        status: 'active',
+                        startDate: now.toISOString(),
+                        nextBilling: nextBilling.toISOString(),
+                        billingDate: nextBilling.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                    };
+                } else if (selectedPlan === 'annual') {
+                    alert('Annual payment integration needed. For now, we simulate activation.');
+                    const now = new Date();
+                    const nextBilling = new Date(now);
+                    nextBilling.setFullYear(now.getFullYear() + 1);
+                    subscriptionData = {
+                        plan: 'Annual Pro',
+                        status: 'active',
+                        startDate: now.toISOString(),
+                        nextBilling: nextBilling.toISOString(),
+                        billingDate: nextBilling.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                    };
+                }
+                else if (selectedPlan === 'unlimited') {
+    alert('Unlimited plan payment integration needed. For demo, we activate it.');
+    const nextBilling = new Date(now);
+    nextBilling.setFullYear(now.getFullYear() + 1);
+    subscriptionData = {
+        plan: 'Unlimited Pro',
+        status: 'active',
+        startDate: now.toISOString(),
+        nextBilling: nextBilling.toISOString(),
+        billingDate: nextBilling.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    };
+}
+
+                // Update Firestore
+                await updateDoc(userDocRef, {
+                    subscription: subscriptionData
+                });
+
+                // Optionally log activity
+                let activity = JSON.parse(localStorage.getItem('subscriptionActivity') || '[]');
+                activity.push({
+                    action: `Subscribed to ${subscriptionData.plan}`,
+                    date: new Date().toLocaleString(),
+                    amount: selectedPlan === 'trial' ? '₦0' : (selectedPlan === 'monthly' ? '₦5,000' : '₦45,000')
+                });
+                if (activity.length > 10) activity.shift();
+                localStorage.setItem('subscriptionActivity', JSON.stringify(activity));
+
+                // Update UI
+                loadUserSubscription(user);
+                alert('Subscription updated!');
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // ================== Change Plan (just triggers selection) ==================
+        function changePlan() {
+            alert('Select a new plan from the list below.');
+            // Optionally scroll to plans
+            document.querySelector('.grid-cols-1').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ================== Load Activity from localStorage (for demo) ==================
+        function loadActivity() {
+            const activity = JSON.parse(localStorage.getItem('subscriptionActivity') || '[]');
+            const container = document.getElementById('subscriptionActivity');
+            if (activity.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">No recent activity</p>';
+            } else {
+                container.innerHTML = activity.slice(-3).reverse().map(a => `
+                    <div class="bg-white dark:bg-gray-800 p-3 rounded-xl flex justify-between items-center border dark:border-gray-700">
+                        <div>
+                            <p class="font-bold text-sm">${a.action}</p>
+                            <p class="text-xs text-gray-500">${a.date}</p>
+                        </div>
+                        <span class="text-xs font-mono text-gray-400">${a.amount || ''}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ================== Auth Observer ==================
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // Redirect to login? Or show message.
+                console.log('No user logged in');
+                document.getElementById('planName').innerText = 'Not logged in';
+                document.getElementById('billingDate').innerText = '-';
+                document.getElementById('planStatusText').innerText = 'Inactive';
+            } else {
+                currentUser = user;
+                loadUserSubscription(user);
+            }
+        });
+
+        // ================== Initialize ==================
+        loadActivity();
+        // Expose changePlan globally for onclick
+        window.changePlan = changePlan;
+    </script>
+</body>
+</html>

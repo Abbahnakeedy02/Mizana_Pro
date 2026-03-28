@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Mizana Pro · Upload Product</title>
+    <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="../src/assets/css/all.min.css">
+    <link rel="stylesheet" href="../src/output.css">
+    <!-- ZXing library for barcode scanning -->
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#132B77',
+                            accent: '#0A89A4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .tab-active { border-bottom: 4px solid #0A89A4; color: #0A89A4; }
+        .upload-area.dragover { border-color: #0A89A4; background: rgba(10, 137, 164, 0.05); }
+        .conversion-text { font-size: 10px; color: #6b7280; margin-top: 2px; padding-left: 4px; }
+        .dark .conversion-text { color: #9ca3af; }
+        input, select, button { touch-action: manipulation; }
+        #cameraModal {
+            transition: opacity 0.2s ease;
+        }
+        #videoElement {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            transform: scaleX(-1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+        <div class="flex items-center gap-4 mb-4">
+            <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold dark:text-white">Add Product</h1>
+        </div>
+        
+        <div class="flex border-b dark:border-gray-700 border-gray-200">
+            <button onclick="switchTab('single')" id="tabSingle" class="flex-1 py-4 text-xs font-black uppercase tracking-widest tab-active">Single Item</button>
+            <button onclick="switchTab('table')" id="tabTable" class="flex-1 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Table Upload</button>
+            <button onclick="switchTab('bulk')" id="tabBulk" class="flex-1 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Bulk Import</button>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-3xl mx-auto pb-28">
+        <!-- Single Item Form -->
+        <div id="viewSingle" class="space-y-6">
+            <!-- Row 1: Photo + Product Name (two cols on mobile, desktop: part of three‑col row)-->
+            <div class="grid grid-cols-3 md:grid-cols-3 gap-3">
+                <!-- Product Image (col-span-1) -->
+                <div class="flex justify-center items-start col-span-1">
+                    <div class="relative w-20 h-20 bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-3xl flex flex-col items-center justify-center text-gray-400 gap-2 cursor-pointer hover:border-brand-accent transition overflow-hidden" onclick="document.getElementById('productImage').click()">
+                        <img id="imagePreview" src="#" alt="" class="absolute inset-0 w-full h-full object-cover hidden">
+                        <i class="fas fa-camera text-2xl" id="cameraIcon"></i>
+                        <span class="text-[10px] font-bold" id="photoText">Add Photo</span>
+                    </div>
+                    <input type="file" id="productImage" class="hidden" accept="image/*" onchange="previewImage(event)">
+                </div>
+
+                <!-- Product Name (col-span-1) -->
+                <div class="space-y-1 col-span-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Product Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="productName" placeholder="e.g. Dangote Sugar" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none focus:ring-2 focus:ring-brand-accent">
+                </div>
+
+                <!-- Expiry Date – hidden on mobile (will appear in Row 2), visible on desktop -->
+                <div class="block md:block space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Expiry Date (optional)</label>
+                    <input type="date" id="expiryDate" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none">
+                </div>
+            </div>
+
+            <!-- Row 2: Expiry Date (full width on mobile, hidden on desktop) -->
+            <div class="hidden md:hidden space-y-1">
+                <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Expiry Date (optional)</label>
+                <input type="date" id="expiryDateMobile" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none" onchange="document.getElementById('expiryDate').value = this.value">
+            </div>
+
+            <!-- Row 3: Barcode + Category (two cols on mobile, desktop: part of three‑col row) -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <!-- Barcode with scan button (col-span-1) -->
+                <div class="space-y-1 col-span-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Barcode / SKU (optional)</label>
+                    <div class="flex gap-2">
+                        <div class="relative flex-1">
+                            <input type="text" id="barcode" placeholder="Scan or type" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none focus:ring-2 focus:ring-brand-accent" onchange="autoFillFromBarcode()">
+                            <i class="fas fa-barcode absolute right-4 top-1/2 -translate-y-1/2 text-brand-accent text-xl"></i>
+                        </div>
+                        <button onclick="openScanner()" class="bg-brand-accent text-brand-main px-4 py-2 rounded-xl text-sm font-black flex items-center gap-2 whitespace-nowrap">
+                            <i class="fas fa-camera"></i> Scan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category (col-span-1) -->
+                <div class="space-y-1 col-span-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Category <span class="text-red-500">*</span></label>
+                    <select id="categorySelect" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none" onchange="toggleCustomCategory()">
+                        <option>Grains</option>
+                        <option>Beverages</option>
+                        <option>Toiletries</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <!-- Desktop Cost per Package – visible only on desktop -->
+                <div class="hidden md:block space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Cost per Package (₦) <span class="text-red-500">*</span></label>
+                    <input type="number" id="costPerPackage" value="0" min="0" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none" oninput="syncCostFields(this.value); updateCalculations();">
+                    <div id="costPerPackageConversion" class="conversion-text">English: zero · Hausa: sifili</div>
+                </div>
+            </div>
+
+            <!-- Custom category (hidden by default, full width) -->
+            <div id="customCategoryContainer" class="hidden">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Custom Category <span class="text-red-500">*</span></label>
+                    <input type="text" id="customCategory" placeholder="Enter category" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none">
+                </div>
+            </div>
+
+            <!-- Main grid: 2 columns on mobile, 3 on desktop -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <!-- Mobile Cost per Package – visible only on mobile (inside grid) -->
+                <div class="block md:hidden space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Cost per Package (₦) <span class="text-red-500">*</span></label>
+                    <input type="number" id="costPerPackageMobile" value="0" min="0" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none" oninput="syncCostFields(this.value); updateCalculations();">
+                    <div id="costPerPackageConversionMobile" class="conversion-text">English: zero · Hausa: sifili</div>
+                </div>
+
+                <!-- Number of Packages -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Number of Packages <span class="text-red-500">*</span></label>
+                    <input type="number" id="numPackages" value="1" min="1" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none" oninput="updateCalculations()">
+                </div>
+
+                <!-- Pieces per Package -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Pieces per Package <span class="text-red-500">*</span></label>
+                    <input type="number" id="piecesPerPackage" value="1" min="1" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none" oninput="updateCalculations()">
+                </div>
+
+                <!-- Selling Price per Package -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Selling Price per Package (₦) <span class="text-red-500">*</span></label>
+                    <input type="number" id="sellPerPackage" value="0" min="0" class="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base outline-none" oninput="updateCalculations()">
+                    <div id="sellPerPackageConversion" class="conversion-text">English: zero · Hausa: sifili</div>
+                </div>
+
+                <!-- Cost per Piece (read‑only) -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Cost per Piece (₦)</label>
+                    <div class="w-full bg-gray-100 dark:bg-gray-700 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base text-gray-800 dark:text-white font-bold" id="costPerPieceDisplay">0.00</div>
+                </div>
+
+                <!-- Selling per Piece (read‑only) -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Selling per Piece (₦)</label>
+                    <div class="w-full bg-gray-100 dark:bg-gray-700 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base text-gray-800 dark:text-white font-bold" id="sellPerPieceDisplay">0.00</div>
+                </div>
+
+                <!-- Profit per Package (read‑only) -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Profit per Package (₦)</label>
+                    <div class="w-full bg-gray-100 dark:bg-gray-700 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base text-gray-800 dark:text-white font-bold" id="profitPerPackageDisplay">0.00</div>
+                </div>
+
+                <!-- Profit per Piece (read‑only) -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Profit per Piece (₦)</label>
+                    <div class="w-full bg-gray-100 dark:bg-gray-700 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base text-gray-800 dark:text-white font-bold" id="profitPerPieceDisplay">0.00</div>
+                </div>
+
+                <!-- Total Profit (all packages) (read‑only) -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Total Profit (all packages) (₦)</label>
+                    <div class="w-full bg-gray-100 dark:bg-gray-700 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base text-gray-800 dark:text-white font-bold" id="totalProfitPackagesDisplay">0</div>
+                </div>
+
+                <!-- Total Pieces (read‑only) -->
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400">Total Pieces</label>
+                    <div class="w-full bg-gray-100 dark:bg-gray-700 border dark:border-gray-700 border-gray-200 rounded-2xl py-4 px-4 text-base text-gray-800 dark:text-white font-bold" id="totalPiecesDisplay">0</div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button onclick="uploadProduct()" class="w-full bg-brand-accent text-brand-main py-5 rounded-3xl font-black text-xl shadow-lg active:scale-95 transition-transform mt-4">
+                UPLOAD PRODUCT
+            </button>
+        </div>
+
+        <!-- Table Upload View -->
+        <div id="viewTable" class="hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Add Products Row by Row</h3>
+                <button onclick="addTableRow()" class="bg-brand-accent text-brand-main px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Add Row
+                </button>
+            </div>
+
+            <div class="overflow-x-auto scrollbar-hide">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700 border-gray-200">
+                        <tr>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Image</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Name*</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Category*</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Barcode</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Cost/Pkg*</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Packages*</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Pieces/Pkg*</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Sell/Pkg*</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Expiry</th>
+                            <th class="p-2 text-left text-[10px] font-black uppercase">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableRows">
+                        <!-- Rows added dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button onclick="uploadTableProducts()" class="w-full bg-brand-accent text-brand-main py-5 rounded-3xl font-black text-xl shadow-lg active:scale-95 transition-transform">
+                UPLOAD ALL PRODUCTS
+            </button>
+        </div>
+
+        <!-- Bulk Import View (CSV) -->
+        <div id="viewBulk" class="hidden space-y-6">
+            <div class="bg-brand-accent/10 border border-brand-accent/20 p-5 rounded-2xl flex items-center gap-4">
+                <i class="fas fa-file-download text-brand-accent text-3xl"></i>
+                <div class="flex-1">
+                    <h4 class="font-bold text-base">Download Template</h4>
+                    <p class="text-xs text-gray-500">Use our CSV format to avoid errors.</p>
+                </div>
+                <button onclick="downloadTemplate()" class="bg-brand-accent text-brand-main text-xs font-black px-5 py-3 rounded-xl">GET CSV</button>
+            </div>
+
+            <div id="dropZone" class="upload-area border-4 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-3 transition-all">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-3xl text-gray-400">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base">Drop your file here</h3>
+                    <p class="text-xs text-gray-500 mt-1">Supports .CSV, .XLSX (Max 10MB)</p>
+                </div>
+                <input type="file" id="fileInput" class="hidden" accept=".csv, .xlsx">
+                <button onclick="document.getElementById('fileInput').click()" class="mt-2 text-brand-accent font-black text-sm border-b-2 border-brand-accent">BROWSE FILES</button>
+            </div>
+
+            <!-- Preview section -->
+            <div id="previewSection" class="hidden space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Preview (First 5 Rows)</h3>
+                    <p id="productCount" class="text-[10px] text-gray-500">0 products detected</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 border-gray-200 overflow-x-auto scrollbar-hide">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700 border-gray-200">
+                            <tr>
+                                <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Name</th>
+                                <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Price</th>
+                                <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Category</th>
+                                <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Stock</th>
+                                <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Barcode</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Import button -->
+            <button id="importBtn" onclick="importCSV()" disabled class="w-full bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 py-4 rounded-2xl font-black text-lg shadow-lg cursor-not-allowed transition-all">
+                IMPORT PRODUCTS
+            </button>
+
+            <!-- Recent Bulk Imports (now dynamic) -->
+            <section class="space-y-3">
+                <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest">Recent Bulk Imports</h4>
+                <div id="recentImportsList" class="space-y-2">
+                    <!-- Will be filled by JavaScript -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Camera Scanner Modal -->
+    <div id="cameraModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4" onclick="if(event.target===this) closeScanner()">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-3xl overflow-hidden">
+            <div class="p-4 border-b dark:border-gray-700 border-gray-200 flex justify-between items-center">
+                <h3 class="font-bold dark:text-white">Scan Barcode</h3>
+                <button onclick="closeScanner()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <video id="videoElement" class="w-full rounded-lg border dark:border-gray-700 border-gray-200"></video>
+                <p class="text-xs text-center text-gray-500 mt-2">Position barcode in front of camera</p>
+            </div>
+            <div class="p-4 pt-0 flex justify-center">
+                <button onclick="closeScanner()" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-6 py-2 rounded-xl font-bold">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-4 rounded-full text-sm font-bold shadow-lg z-50 hidden">
+        Product uploaded
+    </div>
+
+    <script>
+        // ================== DARK MODE ==================
+        (function() {
+            const prefersDark = localStorage.getItem('darkMode') === 'true';
+            if (prefersDark) document.body.classList.add('dark');
+        })();
+
+        // ================== NUMBER TO WORDS (English) ==================
+        function numberToWordsEnglish(num) {
+            if (num === 0) return 'zero';
+            const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+            const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+            const scales = ['', 'thousand', 'million', 'billion'];
+
+            if (num < 0) return 'negative ' + numberToWordsEnglish(-num);
+            let word = '';
+            let scaleIndex = 0;
+            let number = num;
+            do {
+                let chunk = number % 1000;
+                if (chunk) {
+                    let chunkWord = '';
+                    if (chunk >= 100) {
+                        chunkWord += ones[Math.floor(chunk / 100)] + ' hundred ';
+                        chunk %= 100;
+                    }
+                    if (chunk >= 20) {
+                        chunkWord += tens[Math.floor(chunk / 10)] + ' ';
+                        chunk %= 10;
+                    }
+                    if (chunk > 0) {
+                        chunkWord += ones[chunk] + ' ';
+                    }
+                    chunkWord += scales[scaleIndex] + ' ';
+                    word = chunkWord + word;
+                }
+                scaleIndex++;
+                number = Math.floor(number / 1000);
+            } while (number > 0);
+            return word.trim();
+        }
+
+        // ================== NUMBER TO WORDS (Hausa - simplified) ==================
+        function numberToWordsHausa(num) {
+            if (num === 0) return 'sifili';
+            const ones = ['', 'ɗaya', 'biyu', 'uku', 'huɗu', 'biyar', 'shida', 'bakwai', 'takwas', 'tara', 'goma', 'goma sha ɗaya', 'goma sha biyu', 'goma sha uku', 'goma sha huɗu', 'goma sha biyar', 'goma sha shida', 'goma sha bakwai', 'goma sha takwas', 'goma sha tara'];
+            const tens = ['', '', 'ashirin', 'talatin', 'arba\'in', 'hamsin', 'sittin', 'saba\'in', 'tamanin', 'casain'];
+            const scales = ['', 'dubu', 'miliyan', 'biliyan'];
+
+            if (num < 0) return 'ƙasa da sifili ' + numberToWordsHausa(-num);
+            let word = '';
+            let scaleIndex = 0;
+            let number = num;
+            do {
+                let chunk = number % 1000;
+                if (chunk) {
+                    let chunkWord = '';
+                    if (chunk >= 100) {
+                        chunkWord += ones[Math.floor(chunk / 100)] + ' ɗari ';
+                        chunk %= 100;
+                    }
+                    if (chunk >= 20) {
+                        chunkWord += tens[Math.floor(chunk / 10)] + ' ';
+                        chunk %= 10;
+                    }
+                    if (chunk > 0) {
+                        chunkWord += ones[chunk] + ' ';
+                    }
+                    if (scaleIndex > 0) {
+                        chunkWord += scales[scaleIndex] + ' ';
+                    }
+                    word = chunkWord + word;
+                }
+                scaleIndex++;
+                number = Math.floor(number / 1000);
+            } while (number > 0);
+            return word.trim();
+        }
+
+        // ================== TOGGLE CUSTOM CATEGORY ==================
+        function toggleCustomCategory() {
+            const select = document.getElementById('categorySelect');
+            const customContainer = document.getElementById('customCategoryContainer');
+            if (select.value === 'Other') {
+                customContainer.classList.remove('hidden');
+            } else {
+                customContainer.classList.add('hidden');
+            }
+        }
+
+        // ================== UPDATE CALCULATIONS ==================
+        function updateCalculations() {
+            const costPerPackage = parseFloat(document.getElementById('costPerPackage').value) || 0;
+            const numPackages = parseInt(document.getElementById('numPackages').value) || 1;
+            const piecesPerPackage = parseInt(document.getElementById('piecesPerPackage').value) || 1;
+            const sellPerPackage = parseFloat(document.getElementById('sellPerPackage').value) || 0;
+
+            const costPerPiece = costPerPackage / piecesPerPackage;
+            document.getElementById('costPerPieceDisplay').innerText = costPerPiece.toFixed(2);
+
+            const sellPerPiece = sellPerPackage / piecesPerPackage;
+            document.getElementById('sellPerPieceDisplay').innerText = sellPerPiece.toFixed(2);
+
+            const profitPerPackage = sellPerPackage - costPerPackage;
+            document.getElementById('profitPerPackageDisplay').innerText = profitPerPackage.toFixed(2);
+
+            const profitPerPiece = sellPerPiece - costPerPiece;
+            document.getElementById('profitPerPieceDisplay').innerText = profitPerPiece.toFixed(2);
+
+            const totalProfitPackages = profitPerPackage * numPackages;
+            document.getElementById('totalProfitPackagesDisplay').innerText = totalProfitPackages.toFixed(2);
+
+            const totalPieces = numPackages * piecesPerPackage;
+            document.getElementById('totalPiecesDisplay').innerText = totalPieces;
+
+            document.getElementById('costPerPackageConversion').innerText = `English: ${numberToWordsEnglish(costPerPackage)} · Hausa: ${numberToWordsHausa(costPerPackage)}`;
+            document.getElementById('sellPerPackageConversion').innerText = `English: ${numberToWordsEnglish(sellPerPackage)} · Hausa: ${numberToWordsHausa(sellPerPackage)}`;
+            document.getElementById('costPerPackageConversionMobile').innerText = document.getElementById('costPerPackageConversion').innerText;
+        }
+
+        function syncCostFields(value) {
+            document.getElementById('costPerPackage').value = value;
+            document.getElementById('costPerPackageMobile').value = value;
+        }
+
+        // ================== GENERATE IDs ==================
+        function generateProductId() {
+            return 'P-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+        }
+        function generatePurchaseId() {
+            return 'PO-' + Date.now();
+        }
+
+        // ================== TOAST ==================
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.innerText = msg;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            } else {
+                alert(msg);
+            }
+        }
+
+        // ================== LOG UPLOAD ==================
+        function logUpload(product) {
+            let uploadHistory = JSON.parse(localStorage.getItem('uploadHistory') || '[]');
+            uploadHistory.push({
+                id: Date.now(),
+                productId: product.id,
+                productName: product.name,
+                timestamp: new Date().toLocaleString()
+            });
+            if (uploadHistory.length > 50) uploadHistory.shift();
+            localStorage.setItem('uploadHistory', JSON.stringify(uploadHistory));
+        }
+
+        // ================== CHECK DUPLICATE BARCODE ==================
+        function isBarcodeExists(barcode) {
+            let products = JSON.parse(localStorage.getItem('products') || '[]');
+            return products.some(p => p.barcode === barcode);
+        }
+
+        // ================== IMAGE PREVIEW (single) ==================
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('imagePreview');
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    document.getElementById('cameraIcon').classList.add('hidden');
+                    document.getElementById('photoText').classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ================== AUTO-FILL FROM BARCODE ==================
+        function autoFillFromBarcode() {
+            const barcode = document.getElementById('barcode').value.trim();
+            if (!barcode) return;
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const existing = products.find(p => p.barcode === barcode);
+            if (existing) {
+                if (confirm(`Product with barcode ${barcode} already exists. Do you want to auto-fill the form with its data?`)) {
+                    document.getElementById('productName').value = existing.name || '';
+                    const catSelect = document.getElementById('categorySelect');
+                    const category = existing.category || '';
+                    if (['Grains', 'Beverages', 'Toiletries', 'Other'].includes(category)) {
+                        catSelect.value = category;
+                    } else {
+                        catSelect.value = 'Other';
+                        document.getElementById('customCategoryContainer').classList.remove('hidden');
+                        document.getElementById('customCategory').value = category;
+                    }
+                    document.getElementById('costPerPackage').value = existing.buyingPrice || 0;
+                    document.getElementById('numPackages').value = existing.packages || 1;
+                    document.getElementById('piecesPerPackage').value = existing.piecesPerPackage || 1;
+                    document.getElementById('sellPerPackage').value = existing.price || 0;
+                    document.getElementById('expiryDate').value = existing.expiryDate || '';
+                    syncCostFields(existing.buyingPrice || 0);
+                    updateCalculations();
+                }
+            }
+        }
+
+        // ================== BARCODE SCANNING ==================
+        let codeReader;
+        let videoElement = document.getElementById('videoElement');
+
+        function openScanner() {
+            document.getElementById('cameraModal').classList.remove('hidden');
+            codeReader = new ZXing.BrowserMultiFormatReader();
+            codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
+                if (result) {
+                    document.getElementById('barcode').value = result.text;
+                    closeScanner();
+                    autoFillFromBarcode();
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.warn(err);
+                }
+            }).catch(err => {
+                alert('Could not access camera: ' + err);
+                closeScanner();
+            });
+        }
+
+        function closeScanner() {
+            if (codeReader) {
+                codeReader.reset();
+            }
+            document.getElementById('cameraModal').classList.add('hidden');
+        }
+
+        // ================== SINGLE UPLOAD ==================
+        function uploadProduct() {
+    const name = document.getElementById('productName').value.trim();
+    const category = document.getElementById('categorySelect').value;
+    let customCat = document.getElementById('customCategory').value.trim();
+    const barcode = document.getElementById('barcode').value.trim();
+    const costPerPackage = parseFloat(document.getElementById('costPerPackage').value);
+    const numPackages = parseInt(document.getElementById('numPackages').value);
+    const piecesPerPackage = parseInt(document.getElementById('piecesPerPackage').value);
+    const sellPerPackage = parseFloat(document.getElementById('sellPerPackage').value);
+    const expiryDate = document.getElementById('expiryDate').value || null;
+
+    // Image handling: get the file input and read it as data URL
+    const fileInput = document.getElementById('productImage');
+    const file = fileInput.files[0];
+
+    // We'll use a Promise to wait for the image to be read
+    const readImage = new Promise((resolve) => {
+        if (!file) {
+            resolve('📦'); // default emoji if no image
+        } else {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                resolve(e.target.result); // base64 string
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    readImage.then((imageData) => {
+        // Now we have the image data (base64 or default emoji)
+        // Proceed with validation
+        if (!name) { alert('Product name is required.'); return; }
+        if (!category) { alert('Please select a category.'); return; }
+        if (category === 'Other' && !customCat) { alert('Please enter a custom category.'); return; }
+        if (costPerPackage <= 0) { alert('Cost per package must be greater than 0.'); return; }
+        if (numPackages <= 0) { alert('Number of packages must be at least 1.'); return; }
+        if (piecesPerPackage <= 0) { alert('Pieces per package must be at least 1.'); return; }
+        if (sellPerPackage <= 0) { alert('Selling price per package must be greater than 0.'); return; }
+
+        const finalCategory = category === 'Other' ? customCat : category;
+
+        const product = {
+            id: generateProductId(),
+            purchaseId: generatePurchaseId(),
+            name,
+            price: sellPerPackage,
+            buyingPrice: costPerPackage,
+            piecesPerPackage,
+            category: finalCategory,
+            barcode: barcode || `BAR-${Date.now()}`,
+            stock: numPackages * piecesPerPackage,
+            packages: numPackages,
+            img: imageData, // now correctly stored as string
+            favourite: false,
+            archived: false,
+            expiryDate: expiryDate,
+            createdAt: new Date().toISOString()
+        };
+
+        let products = JSON.parse(localStorage.getItem('products') || '[]');
+        products.push(product);
+        localStorage.setItem('products', JSON.stringify(products));
+
+        logUpload(product);
+        showToast(`✅ ${name} added!`);
+
+        // Reset form
+        document.getElementById('productName').value = '';
+        document.getElementById('categorySelect').value = 'Grains';
+        document.getElementById('customCategoryContainer').classList.add('hidden');
+        document.getElementById('customCategory').value = '';
+        document.getElementById('barcode').value = '';
+        document.getElementById('costPerPackage').value = 0;
+        document.getElementById('numPackages').value = 1;
+        document.getElementById('piecesPerPackage').value = 1;
+        document.getElementById('sellPerPackage').value = 0;
+        fileInput.value = ''; // clear file input
+        document.getElementById('expiryDate').value = '';
+        document.getElementById('imagePreview').classList.add('hidden');
+        document.getElementById('cameraIcon').classList.remove('hidden');
+        document.getElementById('photoText').classList.remove('hidden');
+        updateCalculations();
+    });
+}
+
+        // ================== TABLE UPLOAD ==================
+        function addTableRow() {
+            const tbody = document.getElementById('tableRows');
+            const rowId = 'row-' + Date.now();
+            const row = document.createElement('tr');
+            row.id = rowId;
+            row.className = 'border-b dark:border-gray-700 border-gray-200';
+            row.innerHTML = `
+                <td class="p-2">
+                    <div class="relative w-12 h-12 bg-gray-100 dark:bg-gray-700 border border-dashed border-gray-400 rounded-lg flex items-center justify-center cursor-pointer" onclick="document.getElementById('img-${rowId}').click()">
+                        <img id="preview-${rowId}" class="absolute inset-0 w-full h-full object-cover hidden" src="#">
+                        <i class="fas fa-camera text-gray-400"></i>
+                    </div>
+                    <input type="file" id="img-${rowId}" class="hidden" accept="image/*" onchange="previewTableImage(this, 'preview-${rowId}')">
+                </td>
+                <td class="p-2"><input type="text" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-2 text-xs" placeholder="Name" required></td>
+                <td class="p-2">
+                    <select class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-2 text-xs">
+                        <option>Grains</option>
+                        <option>Beverages</option>
+                        <option>Toiletries</option>
+                        <option>Other</option>
+                    </select>
+                </td>
+                <td class="p-2"><input type="text" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-2 text-xs" placeholder="Barcode"></td>
+                <td class="p-2"><input type="number" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-2 text-xs" placeholder="Cost" min="0" step="1" required></td>
+                <td class="p-2"><input type="number" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-2 text-xs" placeholder="Packages" min="1" value="1" required></td>
+                <td class="p-2"><input type="number" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-2 text-xs" placeholder="Pieces/Pkg" min="1" value="1" required></td>
+                <td class="p-2"><input type="number" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-2 text-xs" placeholder="Sell Price" min="0" required></td>
+                <td class="p-2"><input type="date" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-2 text-xs"></td>
+                <td class="p-2"><button onclick="removeTableRow('${rowId}')" class="text-red-500"><i class="fas fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function previewTableImage(input, previewId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(previewId);
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeTableRow(id) {
+            document.getElementById(id).remove();
+        }
+
+        function uploadTableProducts() {
+            const rows = document.querySelectorAll('#tableRows tr');
+            if (rows.length === 0) {
+                alert('Add at least one row.');
+                return;
+            }
+
+            let products = JSON.parse(localStorage.getItem('products') || '[]');
+            let errors = [];
+
+            rows.forEach((row, index) => {
+                const cells = row.querySelectorAll('td');
+                const imgPreview = cells[0].querySelector('img');
+                const img = imgPreview && imgPreview.src && !imgPreview.src.includes('#') ? imgPreview.src : '📦';
+                const name = cells[1].querySelector('input').value.trim();
+                const categorySelect = cells[2].querySelector('select');
+                const category = categorySelect.value;
+                const barcode = cells[3].querySelector('input').value.trim();
+                const cost = parseFloat(cells[4].querySelector('input').value);
+                const packages = parseInt(cells[5].querySelector('input').value);
+                const pieces = parseInt(cells[6].querySelector('input').value);
+                const sell = parseFloat(cells[7].querySelector('input').value);
+                const expiry = cells[8].querySelector('input').value || null;
+
+                if (!name) { errors.push(`Row ${index+1}: Name required`); return; }
+                if (cost <= 0) { errors.push(`Row ${index+1}: Cost must be >0`); return; }
+                if (packages < 1) { errors.push(`Row ${index+1}: Packages must be ≥1`); return; }
+                if (pieces < 1) { errors.push(`Row ${index+1}: Pieces per package must be ≥1`); return; }
+                if (sell <= 0) { errors.push(`Row ${index+1}: Selling price must be >0`); return; }
+
+                const finalCategory = category;
+
+                const product = {
+                    id: generateProductId(),
+                    purchaseId: generatePurchaseId(),
+                    name,
+                    price: sell,
+                    buyingPrice: cost,
+                    piecesPerPackage: pieces,
+                    category: finalCategory,
+                    barcode: barcode || `BAR-${Date.now()}-${index}`,
+                    stock: packages * pieces,
+                    packages: packages,
+                    img: img,
+                    favourite: false,
+                    archived: false,
+                    expiryDate: expiry,
+                    createdAt: new Date().toISOString()
+                };
+                products.push(product);
+                logUpload(product);
+            });
+
+            if (errors.length > 0) {
+                alert(errors.join('\n'));
+                return;
+            }
+
+            localStorage.setItem('products', JSON.stringify(products));
+            showToast(`✅ ${rows.length} products uploaded!`);
+            document.getElementById('tableRows').innerHTML = '';
+        }
+
+        // ================== TAB SWITCHING ==================
+        function switchTab(type) {
+            const single = document.getElementById('viewSingle');
+            const table = document.getElementById('viewTable');
+            const bulk = document.getElementById('viewBulk');
+            const tabS = document.getElementById('tabSingle');
+            const tabT = document.getElementById('tabTable');
+            const tabB = document.getElementById('tabBulk');
+
+            [single, table, bulk].forEach(v => v.classList.add('hidden'));
+            [tabS, tabT, tabB].forEach(t => {
+                t.classList.remove('tab-active', 'text-brand-accent');
+                t.classList.add('text-gray-400');
+            });
+
+            if (type === 'single') {
+                single.classList.remove('hidden');
+                tabS.classList.add('tab-active');
+                tabS.classList.remove('text-gray-400');
+            } else if (type === 'table') {
+                table.classList.remove('hidden');
+                tabT.classList.add('tab-active');
+                tabT.classList.remove('text-gray-400');
+            } else {
+                bulk.classList.remove('hidden');
+                tabB.classList.add('tab-active');
+                tabB.classList.remove('text-gray-400');
+            }
+        }
+
+        // ================== BULK CSV ==================
+        let csvData = [];
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csv = e.target.result;
+                parseCSV(csv);
+                document.getElementById('importBtn').disabled = false;
+                document.getElementById('importBtn').classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'cursor-not-allowed');
+                document.getElementById('importBtn').classList.add('bg-brand-main', 'dark:bg-brand-accent', 'dark:text-brand-main', 'text-white', 'hover:bg-opacity-90');
+                document.getElementById('previewSection').classList.remove('hidden');
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(csv) {
+            const lines = csv.split('\n').filter(line => line.trim() !== '');
+            const headers = lines[0].split(',').map(h => h.trim());
+            csvData = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.trim());
+                return {
+                    name: values[0] || '',
+                    price: parseFloat(values[1]) || 0,
+                    category: values[2] || '',
+                    stock: parseInt(values[3]) || 0,
+                    barcode: values[4] || ''
+                };
+            }).filter(p => p.name);
+
+            const tbody = document.getElementById('previewTableBody');
+            tbody.innerHTML = csvData.slice(0, 5).map(row => `
+                <tr class="border-b dark:border-gray-700 border-gray-200 last:border-0">
+                    <td class="p-3 text-xs">${row.name}</td>
+                    <td class="p-3 text-xs">₦${row.price}</td>
+                    <td class="p-3 text-xs">${row.category}</td>
+                    <td class="p-3 text-xs">${row.stock}</td>
+                    <td class="p-3 text-xs font-mono">${row.barcode}</td>
+                </tr>
+            `).join('');
+            document.getElementById('productCount').innerText = `${csvData.length} products detected`;
+        }
+
+        function importCSV() {
+            if (!csvData.length) return;
+            let products = JSON.parse(localStorage.getItem('products') || '[]');
+            csvData.forEach(row => {
+                const product = {
+                    id: generateProductId(),
+                    purchaseId: generatePurchaseId(),
+                    name: row.name,
+                    price: row.price,
+                    buyingPrice: 0,
+                    piecesPerPackage: 1,
+                    category: row.category || 'Uncategorized',
+                    barcode: row.barcode || `BAR-${Date.now()}`,
+                    stock: row.stock,
+                    packages: 1,
+                    img: '📦',
+                    favourite: false,
+                    archived: false,
+                    expiryDate: null,
+                    createdAt: new Date().toISOString()
+                };
+                products.push(product);
+                logUpload(product);
+            });
+            localStorage.setItem('products', JSON.stringify(products));
+            showToast(`✅ ${csvData.length} products imported!`);
+            document.getElementById('fileInput').value = '';
+            document.getElementById('previewSection').classList.add('hidden');
+            document.getElementById('importBtn').disabled = true;
+            document.getElementById('importBtn').classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'cursor-not-allowed');
+            document.getElementById('importBtn').classList.remove('bg-brand-main', 'dark:bg-brand-accent', 'dark:text-brand-main', 'text-white', 'hover:bg-opacity-90');
+            loadRecentImports(); // refresh recent list
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        if (dropZone) {
+            ['dragenter', 'dragover'].forEach(name => {
+                dropZone.addEventListener(name, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach(name => {
+                dropZone.addEventListener(name, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                });
+            });
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('fileInput').files = files;
+                    handleFileSelect({ target: { files: files } });
+                }
+            });
+        }
+
+        function downloadTemplate() {
+            const csvContent = "Name,Price,Category,Stock,Barcode\nDangote Sugar,45000,Grains,15,5901234123459\nPeak Milk 400g,2800,Beverages,8,5901234123458\nGino Tomato Paste,600,Canned,25,5901234123461";
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'template.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('fileInput')?.addEventListener('change', function(e) {
+            handleFileSelect(e.target);
+        });
+
+        // ================== RECENT BULK IMPORTS (dynamic) ==================
+        function loadRecentImports() {
+            const history = JSON.parse(localStorage.getItem('uploadHistory') || '[]');
+            const container = document.getElementById('recentImportsList');
+            if (history.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-2">No recent imports</p>';
+                return;
+            }
+            container.innerHTML = history.slice(-3).reverse().map(item => `
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-xl flex justify-between items-center shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-file-csv text-green-500"></i>
+                        <span class="font-bold text-sm">${item.productName}</span>
+                    </div>
+                    <span class="text-xs text-gray-500">${item.timestamp}</span>
+                </div>
+            `).join('');
+        }
+
+        // ================== INIT ==================
+        updateCalculations();
+        loadRecentImports();
+    </script>
+</body>
+</html>

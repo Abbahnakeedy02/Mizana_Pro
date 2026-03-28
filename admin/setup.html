@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Set Up Your Shop · Mizana Pro</title>
+    <link rel="stylesheet" href="../CSS/admin/setup.css">
+</head>
+<body>
+    <div class="setup-card">
+        <div class="logo">
+            <img src="../asset/logo.png" alt=" ">
+            <span>Mizana<span style="color: var(--brand-main);">PRO</span></span>
+        </div>
+
+        <h2>Set up your shop</h2>
+        <div class="subhead">Fill in the details to start selling with confidence.</div>
+
+        <!-- Step Progress (3 steps) -->
+        <div class="step-progress">
+            <div class="step-item active" id="step1-indicator">
+                <div class="step-circle">1</div>
+                <span class="step-label">Shop Details</span>
+            </div>
+            <div class="step-item" id="step2-indicator">
+                <div class="step-circle">2</div>
+                <span class="step-label">Verification</span>
+            </div>
+            <div class="step-item" id="step3-indicator">
+                <div class="step-circle">3</div>
+                <span class="step-label">Tutorial</span>
+            </div>
+        </div>
+
+        <!-- STEP 1: Shop details -->
+        <div class="form-step active" id="step1">
+            <div class="input-group">
+                <label>🏪 Shop Name</label>
+                <input type="text" id="shopName" placeholder="e.g., Alhaji's Supermarket" required>
+            </div>
+            <div class="input-group">
+                <label>💰 Currency</label>
+                <select id="currency">
+                    <option value="NGN">Nigerian Naira (₦)</option>
+                    <option value="USD">US Dollar ($)</option>
+                    <option value="GBP">British Pound (£)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>🏷️ Shop Type</label>
+                <select id="shopType">
+                    <option>Retail Shop</option>
+                    <option>Wholesale/Distribution</option>
+                    <option>Restaurant/Food</option>
+                    <option>Pharmacy</option>
+                </select>
+            </div>
+
+            <div class="trust-row">
+                <span class="confidentiality-badge"><span>🔒</span> Encrypted & Secure</span>
+                <span class="build-trust"><span>🛡️</span> Bank-level protection</span>
+            </div>
+
+            <div class="tips-box">
+                <div class="tips-icon">💡</div>
+                <div class="tips-content">
+                    <h4>Technical tip</h4>
+                    <p>You can change currency later in settings, but it will affect existing reports. Choose wisely.</p>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn-primary" id="step1-next">Continue →</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Admin PIN -->
+        <div class="form-step" id="step2">
+            <div class="input-group">
+                <label>🔐 Admin PIN (4 digits)</label>
+                <input type="password" id="adminPin" maxlength="4" placeholder="••••"
+                    style="letter-spacing: 8px; font-size: 1.5rem; text-align: center;">
+            </div>
+
+            <div class="trust-row">
+                <span class="confidentiality-badge">🔒 PIN encrypted</span>
+                <span class="build-trust">Only you see profit</span>
+            </div>
+
+            <div class="tips-box" style="background: var(--gray-100); color: var(--gray-800);">
+                <div class="tips-icon" style="background: var(--brand-bg);">🔑</div>
+                <div class="tips-content">
+                    <h4 style="color: var(--brand-dark);">Why PIN?</h4>
+                    <p style="color: var(--gray-600);">Staff can't access buy prices or net profit. You stay in control.</p>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn-outline" id="step2-back">← Back</button>
+                <button class="btn-primary" id="step2-next">Continue →</button>
+            </div>
+        </div>
+            
+
+        <!-- STEP 3: Phone Verification -->
+<div class="form-step" id="step3">
+    <h3 style="margin-bottom: 24px;">Almost done!</h3>
+    <p>Review your shop details and click "Complete Setup".</p>
+    <div class="trust-row" style="justify-content: center; margin-top: 32px;">
+        <span class="confidentiality-badge">✅ Account ready</span>
+    </div>
+    <div class="form-actions">
+        <button class="btn-outline" id="step3-back">← Back</button>
+        <button class="btn-primary" id="complete-setup">Complete Setup →</button>
+    </div>
+</div>
+    <script type="module" src="../JS/admin/setup.js"></script>
+</body>
+</html>
