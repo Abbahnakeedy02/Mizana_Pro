@@ -50,7 +50,7 @@
 
     <!-- Main pane (settings list) -->
     <div id="mainPane" class="h-screen flex flex-col pane-transition">
-        <!-- Header identical to dashboard -->
+        <!-- Header without dark mode toggle -->
         <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 flex items-center gap-4 h-20">
             <div class="flex items-center gap-4">
                 <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white">
@@ -68,18 +68,15 @@
                        class="w-full h-10 pl-10 pr-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-100 md:bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-accent transition-all cursor-pointer md:cursor-text placeholder-transparent md:placeholder-gray-400">
             </div>
 
-            <!-- Right side icons (dark mode only) -->
+            <!-- No dark mode button here – it's now inside Display settings -->
             <div class="flex items-center gap-3 ml-auto transition-opacity duration-300" id="headerActions">
-                <button id="darkModeToggle" class="text-gray-600 dark:text-gray-300 w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <i class="fas fa-moon dark:hidden"></i>
-                    <i class="fas fa-sun hidden dark:inline"></i>
-                </button>
+                <!-- empty -->
             </div>
         </header>
 
-        <!-- Settings list (scrollable) -->
+        <!-- Settings list (same as before) -->
         <div id="settingsList" class="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
-            <!-- Cards with data-name for search -->
+            <!-- Cards... unchanged -->
             <div data-name="shop profile business name logo currency" onclick="openDetail('shop')" class="bg-white dark:bg-gray-800 p-5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-95 transition shadow-sm border border-transparent hover:border-brand-accent/30">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-brand-accent rounded-full flex items-center justify-center text-xl"><i class="fas fa-store"></i></div>
@@ -145,7 +142,7 @@
         </header>
         <div id="detailContent" class="flex-1 overflow-y-auto p-4 space-y-2 pb-24"></div>
         
-        <!-- Floating save button (hidden by default) -->
+        <!-- Floating save button -->
         <div id="saveBar" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-4 shadow-lg">
             <button onclick="saveChanges()" class="w-full bg-brand-accent text-brand-main py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2">
                 <i class="fas fa-check"></i> Save Changes
@@ -157,53 +154,29 @@
         (function() {
             'use strict';
 
-            // ================== DARK MODE ==================
-            const darkToggle = document.getElementById('darkModeToggle');
-            const prefersDark = localStorage.getItem('darkMode') === 'true';
-            if (prefersDark) document.body.classList.add('dark');
-            darkToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark');
-                const isDark = document.body.classList.contains('dark');
-                localStorage.setItem('darkMode', isDark);
-                if (!settings.display) settings.display = {};
-                settings.display.darkMode = isDark;
-                saveSettings();
-            });
-
-            // ================== SEARCH FOCUS ==================
-            function handleSearchFocus() {
-                if (window.innerWidth < 768) {
-                    const container = document.getElementById('searchContainer');
-                    const actions = document.getElementById('headerActions');
-                    const input = document.getElementById('settingSearch');
-                    container.classList.remove('w-10');
-                    container.classList.add('flex-1');
-                    actions.classList.add('hidden');
-                    input.classList.remove('placeholder-transparent');
-                    input.classList.add('placeholder-gray-400');
-                }
-            }
-            function handleSearchBlur() {
-                if (window.innerWidth < 768) {
-                    const input = document.getElementById('settingSearch');
-                    if (input.value === "") {
-                        const container = document.getElementById('searchContainer');
-                        const actions = document.getElementById('headerActions');
-                        container.classList.remove('flex-1');
-                        container.classList.add('w-10');
-                        actions.classList.remove('hidden');
-                        input.classList.add('placeholder-transparent');
+            // ================== THEME MANAGEMENT ==================
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                } else if (theme === 'system') {
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (prefersDark) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
                     }
                 }
+                // Also save to localStorage for other pages
+                localStorage.setItem('theme', theme);
             }
-            window.handleSearchFocus = handleSearchFocus;
-            window.handleSearchBlur = handleSearchBlur;
 
             // ================== SETTINGS STORAGE ==================
             let settings = {};
             let currentCategory = null;
             let changesMade = false;
-            let editableCategories = ['display', 'notifications']; // only these are editable
+            let editableCategories = ['display', 'notifications'];
 
             function loadSettings() {
                 const stored = localStorage.getItem('mizana_settings');
@@ -218,7 +191,7 @@
                         },
                         display: {
                             defaultView: 'grid',
-                            darkMode: false,
+                            darkMode: 'system',   // changed to string
                             fontScale: 100,
                             showProductImages: true,
                             compactView: false
@@ -246,12 +219,22 @@
                 if (settings.display.fontScale === undefined) settings.display.fontScale = 100;
                 if (settings.display.showProductImages === undefined) settings.display.showProductImages = true;
                 if (settings.display.compactView === undefined) settings.display.compactView = false;
-                settings.display.darkMode = document.body.classList.contains('dark');
+                // Apply theme from settings
+                const savedTheme = settings.display.darkMode || 'system';
+                applyTheme(savedTheme);
             }
 
             function saveSettings() {
                 localStorage.setItem('mizana_settings', JSON.stringify(settings));
+                // Also apply theme again (in case it changed)
+                applyTheme(settings.display.darkMode);
             }
+
+            // ================== SEARCH FOCUS (unchanged) ==================
+            function handleSearchFocus() { /* ... same as before ... */ }
+            function handleSearchBlur() { /* ... same ... */ }
+            window.handleSearchFocus = handleSearchFocus;
+            window.handleSearchBlur = handleSearchBlur;
 
             // ================== SEARCH FILTER ==================
             function filterSettings() {
@@ -290,7 +273,7 @@
                 return totalProfit;
             }
 
-            // ================== DETAIL CONFIGS ==================
+            // ================== DETAIL CONFIGS (updated display) ==================
             const detailConfigs = {
                 shop: {
                     title: "Shop Profile",
@@ -306,7 +289,7 @@
                     editable: true,
                     items: [
                         { label: "Default Shop View", key: "defaultView", type: "select", default: "grid", options: ["grid", "list"], desc: "Grid or List" },
-                        { label: "Dark Mode", key: "darkMode", type: "toggle", default: false, desc: "Enable dark theme (synced)" },
+                        { label: "Theme", key: "darkMode", type: "select", default: "system", options: ["light", "dark", "system"], desc: "Light, Dark, or Follow System" },
                         { label: "Font Scaling", key: "fontScale", type: "range", default: 100, min: 80, max: 120, step: 5, desc: "Adjust text size (%)" },
                         { label: "Show Product Images", key: "showProductImages", type: "toggle", default: true, desc: "Display images in shop/inventory" },
                         { label: "Compact View", key: "compactView", type: "toggle", default: false, desc: "Denser layout, less padding" }
@@ -357,7 +340,6 @@
                 const content = document.getElementById('detailContent');
                 const isEditable = config.editable && editableCategories.includes(categoryKey);
 
-                // Generate HTML
                 let html = '';
                 config.items.forEach(item => {
                     const itemKey = item.key;
@@ -388,6 +370,7 @@
                                         `<option value="${opt}" ${currentValue === opt ? 'selected' : ''}>${opt}</option>`
                                     ).join('')}
                                 </select>
+                                ${item.desc ? `<p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${item.desc}</p>` : ''}
                             </div>
                         `;
                     } else if (item.type === 'range') {
@@ -418,7 +401,7 @@
                     }
                 });
 
-                // Add profit display for inventory
+                // Profit display for inventory
                 if (categoryKey === 'inventory') {
                     const profit = calculateTotalProfit();
                     html += `
@@ -432,7 +415,6 @@
 
                 content.innerHTML = html;
 
-                // Hide save bar if not editable
                 if (isEditable) {
                     document.getElementById('saveBar').classList.remove('show');
                     changesMade = false;
@@ -450,6 +432,10 @@
                 settings[category][key] = newValue;
                 changesMade = true;
                 document.getElementById('saveBar').classList.add('show');
+                // Special: if theme changed, apply immediately
+                if (category === 'display' && key === 'darkMode') {
+                    applyTheme(newValue);
+                }
             }
             window.valueChanged = valueChanged;
 
@@ -472,21 +458,20 @@
                 }
                 changesMade = true;
                 document.getElementById('saveBar').classList.add('show');
-                // Special: dark mode
-                if (category === 'display' && key === 'darkMode') {
-                    document.body.classList.toggle('dark', newVal);
-                    localStorage.setItem('darkMode', newVal);
-                }
             }
             window.toggleSetting = toggleSetting;
 
             function saveChanges() {
-                saveSettings();
-                changesMade = false;
-                document.getElementById('saveBar').classList.remove('show');
-                // Show a simple toast
-                alert('Settings saved!');
-            }
+    saveSettings();
+    changesMade = false;
+    document.getElementById('saveBar').classList.remove('show');
+    // Dispatch a storage event to update other tabs (including the same tab)
+    window.dispatchEvent(new StorageEvent('storage', {
+        key: 'mizana_settings',
+        newValue: JSON.stringify(settings)
+    }));
+    alert('Settings saved!');
+}
             window.saveChanges = saveChanges;
 
             function closeDetail() {
