@@ -1,10 +1,11 @@
--<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Mizana Pro · History Hub</title>
+    <script src="../JS/theme.js"></script>
     <script src="https://cdn.tailwindcs.com"></script>
     <link rel="stylesheet" href="../src/assets/css/all.min.css">
     <link rel="stylesheet" href="../src/output.css">
@@ -736,6 +737,23 @@
             }
         });
     </script>
+    <script>
+  (function() {
+    const toggleBtn = document.getElementById('theme-toggle') || document.getElementById('darkModeToggle');
+    if (!toggleBtn) return;
+
+    // Load saved preference
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark');
+    }
+
+    // Toggle function
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    });
+  })();
+</script>
 </body>
 
 </html>

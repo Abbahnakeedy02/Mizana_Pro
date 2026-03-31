@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Mizana Pro · Finance</title>
+    <script src="../JS/theme.js"></script>
     <script src="https://cdn.tailwindcs.com"></script>
     <link rel="stylesheet" href="../src/assets/css/all.min.css">
     <link rel="stylesheet" href="../src/output.css">
@@ -36,10 +37,7 @@
                 </button>
                 <h1 class="text-xl font-bold dark:text-white">Finance</h1>
             </div>
-            <button id="darkModeToggle" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                <i class="fas fa-moon dark:hidden"></i>
-                <i class="fas fa-sun hidden dark:inline"></i>
-            </button>
+            
         </div>
     </header>
 
@@ -64,16 +62,7 @@
     </main>
 
     <script>
-        // Dark mode
-        (function() {
-            const darkToggle = document.getElementById('darkModeToggle');
-            const prefersDark = localStorage.getItem('darkMode') === 'true';
-            if (prefersDark) document.body.classList.add('dark');
-            darkToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark');
-                localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-            });
-        })();
+        
 
         function loadFinance() {
             const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
@@ -133,5 +122,22 @@
         loadFinance();
         window.addEventListener('storage', loadFinance);
     </script>
+    <script>
+  (function() {
+    const toggleBtn = document.getElementById('theme-toggle') || document.getElementById('darkModeToggle');
+    if (!toggleBtn) return;
+
+    // Load saved preference
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark');
+    }
+
+    // Toggle function
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    });
+  })();
+</script>
 </body>
 </html>

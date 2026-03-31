@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Mizana Pro · SHOP</title>
+    <script src="../JS/theme.js"></script>
     <script src="https://cdn.tailwindcs.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../src/assets/css/all.min.css">
     <link rel="stylesheet" href="../src/output.css">
     <script>
@@ -407,106 +408,75 @@
         }
     </style>
 </head>
-
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors h-screen flex overflow-hidden">
 
     <div id="overlay" class="fixed inset-0 bg-black/50 hidden z-40" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar"
-        class="w-64 fixed md:relative inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl bg-[#132B77] text-white">
+    <!-- Sidebar (unchanged) -->
+    <aside id="sidebar" class="w-64 fixed md:relative inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl bg-[#132B77] dark:bg-[#0f1a2f] text-white">
         <div class="p-6 border-b border-white/10 flex items-center gap-3">
-            <div
-                class="w-10 h-10 bg-brand-accent rounded-lg flex items-center justify-center text-white font-black shadow-lg">
-            </div>
+            <div class="w-10 h-10 bg-brand-accent rounded-lg flex items-center justify-center text-white font-black shadow-lg"></div>
             <span class="text-xl font-bold tracking-tighter">Mizana <span class="text-brand-accent">Pro</span></span>
         </div>
-
         <nav class="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
-            <!-- Main Navigation -->
+            <!-- Same navigation as before -->
             <div>
                 <p class="text-[10px] font-bold text-white/30 uppercase tracking-wider px-3 mb-2">Main Navigation</p>
                 <div class="space-y-1">
-                    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt w-5"></i>
-                        Dashboard</a>
-                    <a href="shop.html" class="sidebar-link active"><i class="fas fa-store w-5"></i> Shop (POS)</a>
-                    <a href="inventory.html" class="sidebar-link"><i class="fas fa-boxes w-5"></i> Inventory</a>
+                    <a href="dashboard.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition"><i class="fas fa-tachometer-alt w-5"></i> Dashboard</a>
+                    <a href="shop.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition sidebar-active"><i class="fas fa-store w-5"></i> Shop (POS)</a>
+                    <a href="inventory.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-boxes w-5"></i> Inventory</a>
                 </div>
             </div>
-
-            <!-- Financials -->
             <div>
                 <p class="text-[10px] font-bold text-white/30 uppercase tracking-wider px-3 mb-2">Financials</p>
                 <div class="space-y-1">
-                    <a href="reports.html" class="sidebar-link"><i class="fas fa-file-invoice-dollar w-5"></i>
-                        Reports</a>
-                    <a href="expenses.html" class="sidebar-link"><i class="fas fa-wallet w-5"></i> Expenses</a>
-                    <a href="debt.html" class="sidebar-link"><i class="fas fa-hand-holding-usd w-5"></i> Debts
-                        (Bashi)</a>
-                    <a href="finance.html" class="sidebar-link"><i class="fas fa-chart-pie w-5"></i> Finance</a>
-                    <a href="damage.html" class="sidebar-link"><i class="fas fa-trash-alt w-5"></i> Waste/Damage</a>
+                    <a href="reports.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-file-invoice-dollar w-5"></i> Reports</a>
+                    <a href="expenses.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-wallet w-5"></i> Expenses</a>
+                    <a href="debt.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-hand-holding-usd w-5"></i> Debts (Bashi)</a>
+                    <a href="finance.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-chart-pie w-5"></i> Finance</a>
+                    <a href="damage.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-trash-alt w-5"></i> Waste/Damage</a>
                 </div>
             </div>
-
-            <!-- Management & Analytics -->
             <div>
-                <p class="text-[10px] font-bold text-white/30 uppercase tracking-wider px-3 mb-2">Management & Analytics
-                </p>
+                <p class="text-[10px] font-bold text-white/30 uppercase tracking-wider px-3 mb-2">Management & Analytics</p>
                 <div class="space-y-1">
-                    <a href="history.html" class="sidebar-link"><i class="fas fa-history w-5"></i> Activity Log</a>
-                    <a href="ranking.html" class="sidebar-link"><i class="fas fa-trophy w-5"></i> Ranking</a>
-                    <a href="advert.html" class="sidebar-link"><i class="fas fa-ad w-5"></i> Advert</a>
-                    <a href="tips.html" class="sidebar-link"><i class="fas fa-lightbulb w-5"></i> Tips</a>
+                    <a href="history.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-history w-5"></i> Activity Log</a>
+                    <a href="ranking.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-trophy w-5"></i> Ranking</a>
+                    <a href="advert.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-ad w-5"></i> Advert</a>
+                    <a href="tips.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-lightbulb w-5"></i> Tips</a>
                 </div>
             </div>
-
-            <!-- Control & Security -->
             <div>
                 <p class="text-[10px] font-bold text-white/30 uppercase tracking-wider px-3 mb-2">Control & security</p>
                 <div class="space-y-1">
-                    <a href="subscription.html" class="sidebar-link"><i class="fas fa-crown w-5"></i> Subscription</a>
-                    <a href="../settings/setting.html" class="sidebar-link"><i class="fas fa-cog w-5"></i> Settings</a>
-                    <a href="#" id="logoutBtn" class="sidebar-link hover:bg-red-500/20 text-red-400"><i
-                            class="fas fa-sign-out-alt w-5"></i> Logout</a>
+                    <a href="subscription.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-crown w-5"></i> Subscription</a>
+                    <a href="../settings/setting.html" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-white/80 transition"><i class="fas fa-cog w-5"></i> Settings</a>
+                    <a href="#" id="logoutBtn" class="flex items-center gap-4 p-3 rounded-xl hover:bg-red-500/20 text-red-400 transition"><i class="fas fa-sign-out-alt w-5"></i> Logout</a>
                 </div>
             </div>
         </nav>
     </aside>
 
     <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header
-            class="bg-white dark:bg-gray-800 border-b dark:border-gray-200 border-gray-200 p-4 flex items-center gap-2 h-20">
+        <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-200 border-gray-200 p-4 flex items-center gap-2 h-20">
             <div id="headerLeft" class="flex items-center gap-4">
-                <button onclick="toggleSidebar()"
-                    class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white">
+                <button onclick="toggleSidebar()" class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <div id="searchContainer"
-                class="relative flex items-center transition-all duration-300 w-10 h-10 md:flex-1 md:max-w-md ml-2 md:ml-0">
-                <i id="searchIcon"
-                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10 pointer-events-none"></i>
-                <input type="search" id="searchInput" placeholder="Search products..." onfocus="handleSearchFocus()"
-                    onblur="handleSearchBlur()"
-                    class="w-full h-10 pl-10 pr-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-100 md:bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-accent transition-all cursor-pointer md:cursor-text placeholder-transparent md:placeholder-gray-400">
+            <div id="searchContainer" class="relative flex items-center transition-all duration-300 w-10 h-10 md:flex-1 md:max-w-md ml-2 md:ml-0">
+                <i id="searchIcon" class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10 pointer-events-none"></i>
+                <input type="search" id="searchInput" placeholder="Search products..." onfocus="handleSearchFocus()" onblur="handleSearchBlur()"
+                       class="w-full h-10 pl-10 pr-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-100 md:bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-accent transition-all cursor-pointer md:cursor-text placeholder-transparent md:placeholder-gray-400">
             </div>
             <div id="headerActions" class="flex items-center gap-3 ml-auto transition-opacity duration-300">
-                <button id="roleToggle"
-                    class="h-10 text-sm bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full font-medium transition-colors duration-200"
-                    data-role="staff" onclick="toggleRole()">
-                    👤 Staff
-                </button>
-                <button id="darkModeToggle"
-                    class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <i class="fas fa-moon dark:hidden"></i>
-                    <!--<i class="fas fa-sun hidden dark:inline"></i>-->
-                </button>
-                <button id="id-btn-calc"
-                    class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"><i
-                        class="fas fa-calculator"></i></button>
-                <a href="../settings/profile.html"
-                    class="w-10 h-10 rounded-full bg-brand-main text-white flex items-center justify-center shadow-lg"><i
-                        class="fas fa-user"></i></a>
+                <!-- Role badge -->
+                <div class="px-3 py-1 rounded-full text-xs font-medium bg-gray-200 dark:bg-gray-700">
+                    <i class="fas fa-user-shield mr-1"></i> <span id="roleBadge">Staff</span>
+                </div>
+                <button id="id-btn-calc" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"><i class="fas fa-calculator"></i></button>
+                <a href="../settings/profile.html" class="w-10 h-10 rounded-full bg-brand-main text-white flex items-center justify-center shadow-lg"><i class="fas fa-user"></i></a>
             </div>
         </header>
 
@@ -724,8 +694,8 @@
                 </div>
             </div>
         </div>
-    </main>
 
+    </main>
     <!-- Loan Modal -->
     <div id="loanModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4"
         onclick="if(event.target===this) closeLoanModal()">
@@ -755,6 +725,7 @@
         </div>
     </div>
 
+
     <script>
         // ================== GLOBAL VARIABLES ==================
         let products = [];
@@ -767,7 +738,7 @@
         let showFavouritesOnly = false;
         let showArchived = false;
         let selectedCategory = 'all';
-        let userRole = localStorage.getItem('userRole') || 'staff';
+        
 
         let selectedProductForMenu = null;
         let menuQty = 1;
@@ -775,7 +746,10 @@
         let appSettings = {};
         let pendingCheckoutData = null; // for loan modal
 
-        // ================== LOAD DATA FROM LOCALSTORAGE ==================
+        let userRole = localStorage.getItem('userRole') || 'staff';
+        document.getElementById('roleBadge').innerText = userRole === 'owner' ? 'Owner' : 'Staff';
+
+                // ================== LOAD DATA FROM LOCALSTORAGE ==================
         function loadData() {
             try {
                 const savedProducts = localStorage.getItem('products');
@@ -1168,7 +1142,7 @@
             });
         }
 
-        // ================== CHECKOUT (with modal) ==================
+                // ================== CHECKOUT (with modal) ==================
 
 
         function checkout() {
@@ -1497,18 +1471,11 @@
             if (event.target === event.currentTarget) closeMenu();
         }
 
-        // ================== MOBILE CART DRAWER ==================
+                // ================== MOBILE CART DRAWER ==================
         function toggleCartDrawer() {
             document.getElementById('cartDrawer').classList.toggle('open');
         }
 
-        // ================== ROLE TOGGLE ==================
-        function toggleRole() {
-            userRole = userRole === 'staff' ? 'manager' : 'staff';
-            localStorage.setItem('userRole', userRole);
-            document.getElementById('roleToggle').innerHTML = userRole === 'staff' ? '👤 Staff' : '👑 Manager';
-            renderProducts();
-        }
 
         // ================== SALES HISTORY ==================
         function showHistory() {
@@ -1571,32 +1538,6 @@
             if (event.target == modal) closeCalculator();
         };
 
-        
-// ================== DARK MODE TOGGLE ==================
-const darkToggle = document.getElementById('darkModeToggle');
-if (darkToggle) {
-    darkToggle.addEventListener('click', () => {
-        const isDark = document.body.classList.contains('dark');
-        if (isDark) {
-            document.body.classList.remove('dark');
-            localStorage.setItem('darkMode', 'false');
-        } else {
-            document.body.classList.add('dark');
-            localStorage.setItem('darkMode', 'true');
-        }
-        
-        // Update icon
-        const themeIcon = document.getElementById('theme-icon');
-        if (themeIcon) {
-            if (document.body.classList.contains('dark')) {
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-            } else {
-                themeIcon.classList.replace('fa-sun', 'fa-moon');
-            }
-        }
-    });
-}
-
         // ================== SIDEBAR TOGGLE ==================
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -1650,7 +1591,7 @@ if (darkToggle) {
             });
         });
 
-        // ================== INIT ==================
+                // ================== INIT ==================
         loadData();
         applySettings();
         updateCategoryChips();
@@ -1709,13 +1650,8 @@ if (darkToggle) {
         const activeDebts = allDebts.filter(d => !d.voided);
         const allUploads = JSON.parse(localStorage.getItem('uploadHistory') || '[]');
         const activeUploads = allUploads.filter(u => !u.voided);
+       
+
     </script>
-    <script type="module">
-    import { initDarkMode } from '../JS/darkmode.js';
-    initDarkMode();
-</script>
-
-    
 </body>
-
 </html>

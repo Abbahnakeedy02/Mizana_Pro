@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Mizana Pro · Debts (Bashi)</title>
+    <script src="../JS/theme.js"></script>
     <script src="https://cdn.tailwindcs.com"></script>
     <link rel="stylesheet" href="../src/assets/css/all.min.css">
     <link rel="stylesheet" href="../src/output.css">
@@ -42,10 +43,7 @@
                 <h1 class="text-xl font-bold dark:text-white">Debts (Bashi)</h1>
             </div>
             <div class="flex gap-2">
-                <button id="darkModeToggle" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <i class="fas fa-moon dark:hidden"></i>
-                    <i class="fas fa-sun hidden dark:inline"></i>
-                </button>
+                
                 <button onclick="addDebt()" class="bg-brand-accent text-brand-main px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2">
                     <i class="fas fa-plus"></i> New Debt
                 </button>
@@ -90,16 +88,6 @@
     </div>
 
     <script>
-        // Dark mode
-        (function() {
-            const darkToggle = document.getElementById('darkModeToggle');
-            const prefersDark = localStorage.getItem('darkMode') === 'true';
-            if (prefersDark) document.body.classList.add('dark');
-            darkToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark');
-                localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-            });
-        })();
 
         let debts = [];
         let currentFilter = 'all';
@@ -219,5 +207,22 @@
 
         loadDebts();
     </script>
+    <script>
+  (function() {
+    const toggleBtn = document.getElementById('theme-toggle') || document.getElementById('darkModeToggle');
+    if (!toggleBtn) return;
+
+    // Load saved preference
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark');
+    }
+
+    // Toggle function
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    });
+  })();
+</script>
 </body>
 </html>
