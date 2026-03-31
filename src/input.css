@@ -17,6 +17,9 @@
 @source "../settings/setting.html";
 @source "../index.html";
 
+/* Enable class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
 
 @theme {
   /* Brand colors – now with --color- prefix 
