@@ -406,6 +406,20 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        .sidebar-active {
+            background: rgba(10, 137, 164, 0.2);
+            color: #0A89A4 !important;
+            font-weight: bold;
+        }
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        .sidebar-link.active {
+            background: rgba(10, 137, 164, 0.2);
+            color: #0A89A4;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors h-screen flex overflow-hidden">
@@ -413,7 +427,7 @@
     <div id="overlay" class="fixed inset-0 bg-black/50 hidden z-40" onclick="toggleSidebar()"></div>
 
     <!-- Sidebar (unchanged) -->
-    <aside id="sidebar" class="w-64 fixed md:relative inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl bg-[#132B77] dark:bg-[#0f1a2f] text-white">
+    <aside id="sidebar" class="w-64 fixed md:relative inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl bg-[#132B77] dark:bg-[#132B77] text-white">
         <div class="p-6 border-b border-white/10 flex items-center gap-3">
             <div class="w-10 h-10 bg-brand-accent rounded-lg flex items-center justify-center text-white font-black shadow-lg"></div>
             <span class="text-xl font-bold tracking-tighter">Mizana <span class="text-brand-accent">Pro</span></span>
@@ -475,7 +489,8 @@
                 <div class="px-3 py-1 rounded-full text-xs font-medium bg-gray-200 dark:bg-gray-700">
                     <i class="fas fa-user-shield mr-1"></i> <span id="roleBadge">Staff</span>
                 </div>
-                <button id="id-btn-calc" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"><i class="fas fa-calculator"></i></button>
+                <button id="id-btn-calc" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"><i class="fas fa-calculator"></i>
+                </button>
                 <a href="../settings/profile.html" class="w-10 h-10 rounded-full bg-brand-main text-white flex items-center justify-center shadow-lg"><i class="fas fa-user"></i></a>
             </div>
         </header>
@@ -505,16 +520,16 @@
                                 class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hidden z-10">
                                 <div class="p-2 space-y-1">
                                     <button onclick="sortProducts('nameAsc')"
-                                        class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Name
+                                        class="block dark:text-gray-600 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg">Name
                                         (A–Z)</button>
                                     <button onclick="sortProducts('nameDesc')"
-                                        class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Name
+                                        class="block dark:text-gray-600 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Name
                                         (Z–A)</button>
                                     <button onclick="sortProducts('priceAsc')"
-                                        class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Price
+                                        class="block dark:text-gray-600 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Price
                                         (low–high)</button>
                                     <button onclick="sortProducts('priceDesc')"
-                                        class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Price
+                                        class="block dark:text-gray-600 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Price
                                         (high–low)</button>
                                 </div>
                             </div>
@@ -1020,7 +1035,7 @@
                                 <label class="text-xs text-gray-600 dark:text-gray-300">Discount %</label>
                                 <input type="number" min="0" max="100" value="${discount}" 
                                        onchange="updateItemDiscount('${item.id}', this.value)"
-                                       class="w-16 px-2 py-1 border rounded dark:bg-gray-800 border-gray-200 dark:text-white text-sm">
+                                       class="w-10 px-2 py-1 border rounded dark:bg-gray-800 border-gray-200 dark:text-white text-sm">
                             </div>
                         </div>
                     </div>

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Mizana Pro · Bulk Import</title>
-    <script src="../JS/theme.js"></script>
-    <script src="https://cdn.tailwindcs.com"></script>
-    <link rel="stylesheet" href="../src/assets/css/all.min.css">
-    <link rel="stylesheet" href="../src/output.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SheetJS for Excel parsing -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -15,10 +15,11 @@
                 extend: {
                     colors: {
                         brand: {
-                            main: '#1a2a40',
-                            accent: '#f39c12',
-                            danger: '#e74c3c',
-                            success: '#2ecc71'
+                            main: '#0A89A4',
+                            dark: '#132B77',
+                            mid: '#005082',
+                            bright: '#16B2C1',
+                            bg: '#E4F9FF'
                         }
                     }
                 }
@@ -26,17 +27,14 @@
         }
     </script>
     <style>
-        /* Smooth transitions */
         .transition-all { transition: all 0.2s ease; }
-        /* Hide scrollbar for preview table on mobile */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
 
-    <!-- Header -->
-    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 sticky top-0 z-20">
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 sticky top-0 z-20">
         <div class="flex items-center gap-4">
             <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                 <i class="fas fa-arrow-left"></i>
@@ -46,10 +44,10 @@
     </header>
 
     <main class="p-4 max-w-3xl mx-auto space-y-8 pb-24">
-        <!-- Step indicators (optional) -->
+        <!-- Step indicators -->
         <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider">
             <div class="flex items-center gap-2">
-                <span class="w-6 h-6 bg-brand-accent text-white rounded-full flex items-center justify-center">1</span>
+                <span class="w-6 h-6 bg-brand-main text-white rounded-full flex items-center justify-center">1</span>
                 <span class="text-gray-600 dark:text-gray-300">Download Template</span>
             </div>
             <div class="w-8 h-px bg-gray-300 dark:bg-gray-700"></div>
@@ -67,14 +65,14 @@
         <!-- Step 1: Download template -->
         <section class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-brand-accent/10 rounded-2xl flex items-center justify-center text-brand-accent text-xl">
-                    <i class="fas fa-file-csv"></i>
+                <div class="w-12 h-12 bg-brand-main/10 rounded-2xl flex items-center justify-center text-brand-main text-xl">
+                    <i class="fas fa-file-excel"></i>
                 </div>
                 <div class="flex-1">
-                    <h3 class="font-bold dark:text-white">Download CSV Template</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Contains required columns: Name, Price, Category, Stock, Barcode (optional)</p>
+                    <h3 class="font-bold dark:text-white">Download Excel/CSV Template</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Columns: Name, Price, Category, Stock, Barcode, Pieces per Package</p>
                 </div>
-                <button onclick="downloadTemplate()" class="bg-brand-main dark:bg-brand-accent dark:text-brand-main text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg hover:bg-opacity-90 transition">
+                <button onclick="downloadTemplate()" class="bg-brand-main text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg hover:bg-brand-bright transition">
                     <i class="fas fa-download mr-2"></i>Template
                 </button>
             </div>
@@ -83,31 +81,30 @@
         <!-- Step 2: Upload file -->
         <section class="space-y-3">
             <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Upload Your File</h3>
-            <div onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-brand-accent transition bg-white dark:bg-gray-800">
+            <div onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-brand-main transition bg-white dark:bg-gray-800">
                 <i class="fas fa-cloud-upload-alt text-3xl text-gray-400"></i>
                 <p class="font-bold text-sm text-gray-600 dark:text-gray-300">Click to select or drag & drop</p>
-                <p class="text-[10px] text-gray-400">CSV or Excel files (max 10MB)</p>
+                <p class="text-[10px] text-gray-400">Excel (.xlsx, .xls) or CSV files (max 10MB)</p>
             </div>
             <input type="file" id="fileInput" class="hidden" accept=".csv,.xls,.xlsx" onchange="handleFileSelect(this)">
 
-            <!-- Selected file preview (hidden initially) -->
-            <div id="fileInfo" class="hidden bg-brand-accent/5 border border-brand-accent/20 rounded-2xl p-4 flex justify-between items-center">
+            <div id="fileInfo" class="hidden bg-brand-main/5 border border-brand-main/20 rounded-2xl p-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <i class="fas fa-file-csv text-brand-accent"></i>
+                    <i class="fas fa-file-excel text-brand-main"></i>
                     <div>
-                        <p id="fileName" class="font-bold text-sm">products.csv</p>
-                        <p id="fileSize" class="text-[10px] text-gray-500">2.4 MB</p>
+                        <p id="fileName" class="font-bold text-sm">products.xlsx</p>
+                        <p id="fileSize" class="text-[10px] text-gray-500">0 KB</p>
                     </div>
                 </div>
-                <button onclick="removeFile()" class="text-xs text-brand-danger font-bold">Remove</button>
+                <button onclick="removeFile()" class="text-xs text-red-500 font-bold">Remove</button>
             </div>
         </section>
 
-        <!-- Step 3: Preview (appears after file is selected) -->
+        <!-- Step 3: Preview -->
         <section id="previewSection" class="hidden space-y-3">
             <div class="flex items-center justify-between">
                 <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Preview (First 5 Rows)</h3>
-                <p class="text-[10px] text-gray-500">12 products detected</p>
+                <p id="previewCount" class="text-[10px] text-gray-500">0 products detected</p>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
                 <table class="w-full text-sm">
@@ -118,33 +115,30 @@
                             <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Category</th>
                             <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Stock</th>
                             <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Barcode</th>
+                            <th class="p-3 text-left text-[10px] font-black uppercase tracking-wider">Pieces/Pkg</th>
                         </tr>
                     </thead>
-                    <tbody id="previewTableBody">
-                        <!-- Preview rows injected here -->
-                    </tbody>
+                    <tbody id="previewTableBody"></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Submit button (disabled until file selected) -->
         <button id="importBtn" onclick="startImport()" disabled class="w-full bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 py-4 rounded-2xl font-black text-lg shadow-lg cursor-not-allowed transition-all">
             IMPORT PRODUCTS
         </button>
 
-        <!-- Note -->
         <p class="text-center text-[10px] text-gray-500 italic">
-            <i class="fas fa-info-circle mr-1"></i> Duplicate SKUs will be updated; new products will be created.
+            <i class="fas fa-info-circle mr-1"></i> Duplicate barcodes will be updated; new products will be created.
         </p>
     </main>
 
-    <!-- Bottom navigation (optional, matches inventory page) -->
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-900/80 border-gray-200 backdrop-blur-lg border-t dark:border-gray-800 flex justify-around">
+    <!-- Bottom navigation -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t dark:border-gray-800 flex justify-around">
         <button onclick="window.location.href='inventory.html'" class="flex flex-col items-center gap-1 text-gray-400">
             <i class="fas fa-boxes text-xl"></i>
             <span class="text-[10px] font-black uppercase">Stock</span>
         </button>
-        <button onclick="window.location.href='bulk-import.html'" class="flex flex-col items-center gap-1 text-brand-accent">
+        <button onclick="window.location.href='bulk-import.html'" class="flex flex-col items-center gap-1 text-brand-main">
             <i class="fas fa-file-import text-xl"></i>
             <span class="text-[10px] font-black uppercase">Bulk Import</span>
         </button>
@@ -158,82 +152,224 @@
         </button>
     </div>
 
-    <!-- Toast for notifications -->
-    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg z-50 hidden">
-        Import started (simulated)
-    </div>
+    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg z-50 hidden"></div>
 
     <script>
-        // ================== DARK MODE ==================
+    // ================== DARK MODE ==================
+    (function() {
         const prefersDark = localStorage.getItem('darkMode') === 'true';
         if (prefersDark) document.body.classList.add('dark');
+    })();
 
-        // ================== MOCK DATA ==================
-        function downloadTemplate() {
-            // Simulate template download
-            alert('Template download started (sample CSV)');
+    let parsedProducts = [];
+
+    // ================== SHOW TOAST (DEFINED FIRST) ==================
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        if (!toast) {
+            console.warn('Toast element not found');
+            alert(msg);
+            return;
+        }
+        toast.innerText = msg;
+        toast.classList.remove('hidden');
+        toast.style.backgroundColor = isError ? '#dc2626' : '#1f2937';
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // ================== DOWNLOAD TEMPLATE ==================
+    function downloadTemplate() {
+        const templateData = [
+            ['Name', 'Price', 'Category', 'Stock', 'Barcode', 'Pieces per Package'],
+            ['Dangote Sugar', '45000', 'Grains', '15', '5901234123459', '1'],
+            ['Peak Milk 400g', '2800', 'Beverages', '8', '5901234123458', '1'],
+            ['Gino Tomato Paste', '600', 'Canned', '25', '5901234123461', '1'],
+            ['Indomie Noodles', '500', 'Other', '40', '5901234123462', '1'],
+            ['Power Oil', '3500', 'Other', '6', '5901234123463', '1']
+        ];
+        const ws = XLSX.utils.aoa_to_sheet(templateData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Products');
+        XLSX.writeFile(wb, 'mizana_product_template.xlsx');
+        showToast('Template downloaded');
+    }
+
+    // ================== GENERATE PRODUCT ID ==================
+    function generateProductId() {
+        return 'P-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    }
+
+    // ================== HANDLE FILE SELECT ==================
+    function handleFileSelect(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        document.getElementById('fileName').innerText = file.name;
+        document.getElementById('fileSize').innerText = (file.size / 1024).toFixed(1) + ' KB';
+        document.getElementById('fileInfo').classList.remove('hidden');
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+            
+            if (!rows || rows.length < 2) {
+                showToast('File is empty or invalid', true);
+                return;
+            }
+
+            const headers = rows[0];
+            const nameIdx = headers.findIndex(h => h && h.toLowerCase().includes('name'));
+            const priceIdx = headers.findIndex(h => h && h.toLowerCase().includes('price'));
+            const categoryIdx = headers.findIndex(h => h && h.toLowerCase().includes('category'));
+            const stockIdx = headers.findIndex(h => h && h.toLowerCase().includes('stock'));
+            const barcodeIdx = headers.findIndex(h => h && h.toLowerCase().includes('barcode'));
+            const piecesIdx = headers.findIndex(h => h && (h.toLowerCase().includes('pieces') || h.toLowerCase().includes('piece')));
+
+            if (nameIdx === -1 || priceIdx === -1) {
+                showToast('Missing required columns: Name and Price', true);
+                return;
+            }
+
+            parsedProducts = [];
+            for (let i = 1; i < rows.length && i <= 100; i++) {
+                const row = rows[i];
+                if (!row || !row[nameIdx]) continue;
+
+                const name = String(row[nameIdx]).trim();
+                const price = parseFloat(row[priceIdx]) || 0;
+                const category = row[categoryIdx] ? String(row[categoryIdx]).trim() : 'Other';
+                const stock = parseInt(row[stockIdx]) || 0;
+                const barcode = row[barcodeIdx] ? String(row[barcodeIdx]).trim() : `BAR-${Date.now()}-${i}`;
+                const piecesPerPackage = parseInt(row[piecesIdx]) || 1;
+                const costPerPiece = 0; // Not in template, user will set later
+
+                parsedProducts.push({
+                    id: generateProductId(),
+                    name,
+                    price,
+                    category,
+                    stock,
+                    barcode,
+                    piecesPerPackage,
+                    costPerPiece,
+                    buyingPrice: 0,
+                    img: '📦',
+                    favourite: false,
+                    archived: false,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            if (parsedProducts.length === 0) {
+                showToast('No valid products found in file', true);
+                return;
+            }
+
+            document.getElementById('importBtn').disabled = false;
+            document.getElementById('importBtn').classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'cursor-not-allowed');
+            document.getElementById('importBtn').classList.add('bg-brand-main', 'text-white', 'hover:bg-brand-bright', 'cursor-pointer');
+            document.getElementById('previewSection').classList.remove('hidden');
+            document.getElementById('previewCount').innerText = parsedProducts.length + ' products detected';
+            loadPreview();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function loadPreview() {
+        const tbody = document.getElementById('previewTableBody');
+        tbody.innerHTML = parsedProducts.slice(0, 5).map(p => `
+            <tr class="border-b dark:border-gray-700 last:border-0">
+                <td class="p-3 text-xs">${p.name}</td>
+                <td class="p-3 text-xs">₦${p.price.toLocaleString()}</td>
+                <td class="p-3 text-xs">${p.category}</td>
+                <td class="p-3 text-xs">${p.stock}</td>
+                <td class="p-3 text-xs font-mono">${p.barcode}</td>
+                <td class="p-3 text-xs">${p.piecesPerPackage}</td>
+            </tr>
+        `).join('');
+    }
+
+    function removeFile() {
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileInfo').classList.add('hidden');
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('importBtn').disabled = true;
+        document.getElementById('importBtn').classList.remove('bg-brand-main', 'text-white', 'hover:bg-brand-bright', 'cursor-pointer');
+        document.getElementById('importBtn').classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'cursor-not-allowed');
+        parsedProducts = [];
+    }
+
+    function startImport() {
+        if (parsedProducts.length === 0) {
+            showToast('No products to import', true);
+            return;
         }
 
-        function handleFileSelect(input) {
-            if (input.files.length > 0) {
-                const file = input.files[0];
-                document.getElementById('fileName').innerText = file.name;
-                document.getElementById('fileSize').innerText = (file.size / 1024).toFixed(1) + ' KB';
-                document.getElementById('fileInfo').classList.remove('hidden');
-
-                // Enable import button
-                document.getElementById('importBtn').disabled = false;
-                document.getElementById('importBtn').classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'cursor-not-allowed');
-                document.getElementById('importBtn').classList.add('bg-brand-main', 'dark:bg-brand-accent', 'dark:text-brand-main', 'text-white', 'hover:bg-opacity-90');
-
-                // Show preview section with mock data
-                document.getElementById('previewSection').classList.remove('hidden');
-                loadPreview();
+        let existingProducts = JSON.parse(localStorage.getItem('products') || '[]');
+        let uploadHistory = JSON.parse(localStorage.getItem('uploadHistory') || '[]');
+        
+        let added = 0, updated = 0;
+        const importedProducts = [];
+        
+        for (const newProduct of parsedProducts) {
+            const existingIndex = existingProducts.findIndex(p => p.barcode === newProduct.barcode);
+            if (existingIndex !== -1) {
+                existingProducts[existingIndex] = { ...existingProducts[existingIndex], ...newProduct };
+                updated++;
+                importedProducts.push({ ...existingProducts[existingIndex], action: 'updated' });
+            } else {
+                existingProducts.push(newProduct);
+                added++;
+                importedProducts.push({ ...newProduct, action: 'added' });
             }
         }
-
-        function removeFile() {
-            document.getElementById('fileInput').value = '';
-            document.getElementById('fileInfo').classList.add('hidden');
-            document.getElementById('previewSection').classList.add('hidden');
-            document.getElementById('importBtn').disabled = true;
-            document.getElementById('importBtn').classList.remove('bg-brand-main', 'dark:bg-brand-accent', 'dark:text-brand-main', 'text-white', 'hover:bg-opacity-90');
-            document.getElementById('importBtn').classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'cursor-not-allowed');
-        }
-
-        function loadPreview() {
-            // Mock preview data
-            const previewData = [
-                { name: "Dangote Sugar", price: "45000", category: "Grains", stock: "15", barcode: "5901234123459" },
-                { name: "Peak Milk 400g", price: "2800", category: "Beverages", stock: "8", barcode: "5901234123458" },
-                { name: "Gino Tomato Paste", price: "600", category: "Canned", stock: "25", barcode: "5901234123461" },
-                { name: "Indomie Noodles", price: "500", category: "Other", stock: "40", barcode: "5901234123462" },
-                { name: "Power Oil", price: "3500", category: "Other", stock: "6", barcode: "5901234123463" }
-            ];
-            const tbody = document.getElementById('previewTableBody');
-            tbody.innerHTML = previewData.map(row => `
-                <tr class="border-b dark:border-gray-700 last:border-0">
-                    <td class="p-3 text-xs">${row.name}</td>
-                    <td class="p-3 text-xs">₦${row.price}</td>
-                    <td class="p-3 text-xs">${row.category}</td>
-                    <td class="p-3 text-xs">${row.stock}</td>
-                    <td class="p-3 text-xs font-mono">${row.barcode}</td>
-                </tr>
-            `).join('');
-        }
-
-        function startImport() {
-            showToast('Import started – this is a simulation');
-            // In a real app, you'd process the file and update inventory
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
-        }
-    </script>
+        
+        localStorage.setItem('products', JSON.stringify(existingProducts));
+        
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+            id: Date.now(),
+            collection: 'uploadHistory',
+            type: 'uploads',
+            title: 'Bulk Import',
+            description: `${added} new products added, ${updated} products updated`,
+            amount: '',
+            time: timestamp,
+            icon: 'fa-file-import',
+            iconBg: 'gray',
+            voided: false,
+            details: {
+                fileName: document.getElementById('fileName')?.innerText || 'unknown',
+                addedCount: added,
+                updatedCount: updated,
+                totalCount: parsedProducts.length,
+                products: importedProducts.slice(0, 10)
+            }
+        };
+        
+        uploadHistory.push(logEntry);
+        localStorage.setItem('uploadHistory', JSON.stringify(uploadHistory));
+        
+        let activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+        activityLog.push({
+            id: Date.now(),
+            action: 'bulk_import',
+            user: 'Admin',
+            details: `${added} new, ${updated} updated`,
+            timestamp: timestamp
+        });
+        localStorage.setItem('activityLog', JSON.stringify(activityLog));
+        
+        showToast(`Import complete! Added: ${added}, Updated: ${updated}`);
+        
+        setTimeout(() => {
+            removeFile();
+        }, 2000);
+    }
+</script>
     <script src="../JS/theme.js"></script>
 </body>
 </html>

@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Mizana Pro · Rankings</title>
     <script src="../JS/theme.js"></script>
-    <script src="https://cdn.tailwindcs.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../src/assets/css/all.min.css">
     <link rel="stylesheet" href="../src/output.css">
     <script>
@@ -15,9 +16,11 @@
                 extend: {
                     colors: {
                         brand: {
-                            main: '#1a2a40',
-                            accent: '#f39c12',
-                            cyan: '#16B2C1'
+                            main: '#0A89A4',
+                            dark: '#132B77',
+                            mid: '#005082',
+                            bright: '#16B2C1',
+                            bg: '#E4F9FF'
                         }
                     }
                 }
@@ -45,28 +48,27 @@
             const userRole = localStorage.getItem('userRole') || 'staff';
             if (userRole !== 'owner') {
                 alert('Access denied. Only owners can view rankings.');
-                window.location.href = 'dashboard.html'; // redirect to dashboard
+                window.location.href = 'dashboard.html';
             }
         })();
     </script>
 
-    <!-- Header (matches dashboard style) -->
-    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200 p-4 flex items-center justify-between sticky top-0 z-10">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 flex items-center justify-between sticky top-0 z-10">
         <div class="flex items-center gap-4">
             <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-brand-main dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                 <i class="fas fa-arrow-left"></i>
             </button>
             <h1 class="text-xl font-bold dark:text-white">Performance</h1>
         </div>
-        <!-- Time filter dropdown (styled like dashboard) -->
         <select id="timeFilter" class="bg-gray-100 dark:bg-gray-700 border-none rounded-xl py-2 px-3 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-accent">
-            <option>This Month</option>
-            <option>Today</option>
-            <option>All Time</option>
+            <option value="today">Today</option>
+            <option value="month" selected>This Month</option>
+            <option value="all">All Time</option>
         </select>
     </header>
 
-    <!-- Tab switcher (styled to match dashboard category chips) -->
+    <!-- Tab switcher -->
     <div class="p-4 bg-gray-50 dark:bg-gray-900">
         <div class="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-xl max-w-md mx-auto">
             <button id="btnWorkers" onclick="switchRanking('workers')" class="flex-1 py-2 rounded-lg text-sm font-bold transition tab-active">
@@ -81,105 +83,316 @@
     <main class="p-4 max-w-2xl mx-auto pb-20">
         <!-- Workers view -->
         <div id="workerView" class="space-y-3">
-            <!-- Rank 1 – special card -->
-            <div class="rank-1 p-6 rounded-3xl text-white shadow-lg mb-6 relative overflow-hidden">
-                <i class="fas fa-crown absolute right-[-10px] top-[-10px] text-8xl opacity-20 rotate-12"></i>
-                <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl font-black">1</div>
-                    <div>
-                        <h2 class="text-2xl font-black">Sarah Adams</h2>
-                        <p class="opacity-80 text-sm font-medium">Top Sales Associate</p>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-white/20 flex justify-between">
-                    <div><p class="text-xs opacity-70">Total Sales</p><p class="text-xl font-bold">₦1,250,000</p></div>
-                    <div class="text-right"><p class="text-xs opacity-70">Deals</p><p class="text-xl font-bold">142</p></div>
-                </div>
-            </div>
-
-            <!-- Rank 2 – standard card -->
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-4">
-                    <span class="text-lg font-bold text-gray-400 w-6 text-center">2</span>
-                    <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-brand-accent">JO</div>
-                    <div>
-                        <h4 class="font-bold text-sm dark:text-white">John Okafor</h4>
-                        <p class="text-[10px] text-gray-500 dark:text-gray-400">Cashier Terminal B</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="font-bold text-sm dark:text-white">₦890,400</p>
-                    <p class="text-[10px] text-green-500">+12%</p>
-                </div>
-            </div>
-
-            <!-- Rank 3 -->
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-4">
-                    <span class="text-lg font-bold text-brand-accent w-6 text-center">3</span>
-                    <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-brand-accent">MA</div>
-                    <div>
-                        <h4 class="font-bold text-sm dark:text-white">Musa Ahmed</h4>
-                        <p class="text-[10px] text-gray-500 dark:text-gray-400">Sales Floor</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="font-bold text-sm dark:text-white">₦720,000</p>
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500">98 items</p>
-                </div>
-            </div>
+            <div id="workersLoading" class="text-center py-10 text-gray-500">Loading workers data...</div>
+            <div id="workersContent" class="space-y-3 hidden"></div>
         </div>
 
         <!-- Products view (hidden by default) -->
         <div id="productView" class="view-hidden space-y-3">
-            <!-- Rank 1 product – special border -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl border-2 border-brand-accent flex items-center justify-between shadow-lg">
-                <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-2xl text-brand-accent">🍚</div>
-                    <div>
-                        <h4 class="font-black text-sm uppercase dark:text-white">Dangote Rice (50kg)</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Category: Grains</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-xs text-gray-400 dark:text-gray-500">Qty Sold</p>
-                    <p class="font-black text-brand-accent text-lg">542</p>
-                </div>
-            </div>
-
-            <!-- Rank 2 -->
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-4">
-                    <span class="text-sm font-bold text-gray-400 dark:text-gray-500">#2</span>
-                    <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-xl">🥛</div>
-                    <h4 class="font-bold text-sm dark:text-white">Peak Milk 400g</h4>
-                </div>
-                <p class="font-bold text-sm dark:text-white">410 Sold</p>
-            </div>
-
-            <!-- Rank 3 -->
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-4">
-                    <span class="text-sm font-bold text-gray-400 dark:text-gray-500">#3</span>
-                    <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-xl">🥫</div>
-                    <h4 class="font-bold text-sm dark:text-white">Gino Tomato Paste</h4>
-                </div>
-                <p class="font-bold text-sm dark:text-white">385 Sold</p>
-            </div>
+            <div id="productsLoading" class="text-center py-10 text-gray-500">Loading products data...</div>
+            <div id="productsContent" class="space-y-3 hidden"></div>
         </div>
     </main>
 
     <script>
-        // ================== DARK MODE ==================
-        const prefersDark = localStorage.getItem('darkMode') === 'true';
-        if (prefersDark) document.body.classList.add('dark');
+        // ================== LOAD DATA FROM LOCALSTORAGE ==================
+        function loadTransactions() {
+            return JSON.parse(localStorage.getItem('transactions') || '[]');
+        }
+
+        function loadProducts() {
+            return JSON.parse(localStorage.getItem('products') || '[]');
+        }
+
+        function loadStaff() {
+            return JSON.parse(localStorage.getItem('staff') || '[]');
+        }
+
+        // ================== TIME FILTER HELPERS ==================
+        function getDateRange(filter) {
+            const now = new Date();
+            let start, end = new Date();
+            
+            if (filter === 'today') {
+                start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+                end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+            } else if (filter === 'month') {
+                start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+                end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+            } else {
+                start = new Date(0);
+                end = new Date();
+            }
+            return { start, end };
+        }
+
+        function filterTransactionsByDate(transactions, filter) {
+            const { start, end } = getDateRange(filter);
+            return transactions.filter(t => {
+                const tDate = new Date(t.timestamp);
+                return tDate >= start && tDate <= end;
+            });
+        }
+
+        // ================== CALCULATE WORKER RANKINGS ==================
+        function calculateWorkerRankings(filter) {
+            const transactions = filterTransactionsByDate(loadTransactions(), filter);
+            const staff = loadStaff();
+            
+            // Aggregate sales by user (using userId or cashier name from transaction)
+            const salesByUser = {};
+            
+            transactions.forEach(t => {
+                // Try to get user identifier from transaction
+                let userId = t.userId || t.cashier || 'Unknown';
+                if (!userId && t.items && t.items.length > 0) {
+                    userId = 'Staff Member';
+                }
+                
+                const totalAmount = t.total || 0;
+                const itemCount = t.items?.reduce((sum, i) => sum + (i.qty || 0), 0) || 0;
+                
+                if (!salesByUser[userId]) {
+                    salesByUser[userId] = {
+                        name: userId,
+                        sales: 0,
+                        items: 0,
+                        transactions: 0
+                    };
+                }
+                salesByUser[userId].sales += totalAmount;
+                salesByUser[userId].items += itemCount;
+                salesByUser[userId].transactions++;
+            });
+            
+            // Also include staff from staff list with zero sales
+            staff.forEach(s => {
+                if (!salesByUser[s.name]) {
+                    salesByUser[s.name] = {
+                        name: s.name,
+                        sales: 0,
+                        items: 0,
+                        transactions: 0,
+                        role: s.role
+                    };
+                } else {
+                    salesByUser[s.name].role = s.role;
+                }
+            });
+            
+            // Convert to array and sort by sales
+            const rankings = Object.values(salesByUser)
+                .filter(w => w.name !== 'Unknown')
+                .sort((a, b) => b.sales - a.sales)
+                .slice(0, 10);
+            
+            return rankings;
+        }
+
+        // ================== CALCULATE PRODUCT RANKINGS ==================
+        function calculateProductRankings(filter) {
+            const transactions = filterTransactionsByDate(loadTransactions(), filter);
+            const products = loadProducts();
+            
+            // Aggregate sales by product
+            const salesByProduct = {};
+            
+            transactions.forEach(t => {
+                if (t.items && Array.isArray(t.items)) {
+                    t.items.forEach(item => {
+                        const productId = item.id || item.name;
+                        const qty = item.qty || 1;
+                        const price = item.price || 0;
+                        const total = price * qty;
+                        
+                        if (!salesByProduct[productId]) {
+                            // Find matching product for image/emoji
+                            const product = products.find(p => p.id === productId || p.name === item.name);
+                            salesByProduct[productId] = {
+                                id: productId,
+                                name: item.name,
+                                qty: 0,
+                                total: 0,
+                                img: product?.img || (item.name?.charAt(0) || '📦'),
+                                category: product?.category || 'Other'
+                            };
+                        }
+                        salesByProduct[productId].qty += qty;
+                        salesByProduct[productId].total += total;
+                    });
+                }
+            });
+            
+            // Also include products from inventory with zero sales (for completeness)
+            products.forEach(p => {
+                if (!salesByProduct[p.id] && !salesByProduct[p.name]) {
+                    salesByProduct[p.id] = {
+                        id: p.id,
+                        name: p.name,
+                        qty: 0,
+                        total: 0,
+                        img: p.img || '📦',
+                        category: p.category || 'Other'
+                    };
+                }
+            });
+            
+            // Sort by quantity sold (or by total value)
+            const rankings = Object.values(salesByProduct)
+                .filter(p => p.qty > 0)
+                .sort((a, b) => b.qty - a.qty)
+                .slice(0, 10);
+            
+            return rankings;
+        }
+
+        // ================== RENDER WORKERS ==================
+        function renderWorkers(rankings) {
+            const container = document.getElementById('workersContent');
+            const loading = document.getElementById('workersLoading');
+            
+            if (!rankings || rankings.length === 0) {
+                loading.classList.remove('hidden');
+                loading.innerHTML = '<p class="text-center py-10 text-gray-500">No sales data available</p>';
+                container.classList.add('hidden');
+                return;
+            }
+            
+            loading.classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            let html = '';
+            rankings.forEach((worker, index) => {
+                const rank = index + 1;
+                const initials = worker.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                
+                if (rank === 1) {
+                    html += `
+                        <div class="rank-1 p-6 rounded-3xl text-white shadow-lg mb-6 relative overflow-hidden">
+                            <i class="fas fa-crown absolute right-[-10px] top-[-10px] text-8xl opacity-20 rotate-12"></i>
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl font-black">1</div>
+                                <div>
+                                    <h2 class="text-2xl font-black">${escapeHtml(worker.name)}</h2>
+                                    <p class="opacity-80 text-sm font-medium">${worker.role === 'manager' ? 'Manager' : 'Sales Associate'}</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/20 flex justify-between">
+                                <div><p class="text-xs opacity-70">Total Sales</p><p class="text-xl font-bold">₦${worker.sales.toLocaleString()}</p></div>
+                                <div class="text-right"><p class="text-xs opacity-70">Items Sold</p><p class="text-xl font-bold">${worker.items.toLocaleString()}</p></div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const percentChange = rank === 2 ? '+12%' : rank === 3 ? '+5%' : '';
+                    html += `
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center gap-4">
+                                <span class="text-lg font-bold ${rank === 2 ? 'text-gray-400' : 'text-brand-accent'} w-6 text-center">${rank}</span>
+                                <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center font-bold text-brand-accent">${initials}</div>
+                                <div>
+                                    <h4 class="font-bold text-sm dark:text-white">${escapeHtml(worker.name)}</h4>
+                                    <p class="text-[10px] text-gray-500 dark:text-gray-400">${worker.role === 'manager' ? 'Manager' : 'Cashier'}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-sm dark:text-white">₦${worker.sales.toLocaleString()}</p>
+                                ${percentChange ? `<p class="text-[10px] text-green-500">${percentChange}</p>` : `<p class="text-[10px] text-gray-400">${worker.items} items</p>`}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            container.innerHTML = html;
+        }
+
+        // ================== RENDER PRODUCTS ==================
+        function renderProducts(rankings) {
+            const container = document.getElementById('productsContent');
+            const loading = document.getElementById('productsLoading');
+            
+            if (!rankings || rankings.length === 0) {
+                loading.classList.remove('hidden');
+                loading.innerHTML = '<p class="text-center py-10 text-gray-500">No product sales data available</p>';
+                container.classList.add('hidden');
+                return;
+            }
+            
+            loading.classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            let html = '';
+            rankings.forEach((product, index) => {
+                const rank = index + 1;
+                
+                if (rank === 1) {
+                    html += `
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl border-2 border-brand-accent flex items-center justify-between shadow-lg">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 bg-brand-main/10 rounded-2xl flex items-center justify-center text-2xl">${product.img}</div>
+                                <div>
+                                    <h4 class="font-black text-sm uppercase dark:text-white">${escapeHtml(product.name)}</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Category: ${product.category}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-400 dark:text-gray-500">Qty Sold</p>
+                                <p class="font-black text-brand-accent text-lg">${product.qty.toLocaleString()}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm font-bold ${rank === 2 ? 'text-gray-400' : 'text-brand-accent'}">#${rank}</span>
+                                <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-xl">${product.img}</div>
+                                <h4 class="font-bold text-sm dark:text-white">${escapeHtml(product.name)}</h4>
+                            </div>
+                            <p class="font-bold text-sm dark:text-white">${product.qty.toLocaleString()} Sold</p>
+                        </div>
+                    `;
+                }
+            });
+            container.innerHTML = html;
+        }
+
+        // ================== ESCAPE HTML ==================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ================== UPDATE ALL DATA ==================
+        let currentFilter = 'month';
+        let currentTab = 'workers';
+
+        function updateAllData() {
+            const filter = document.getElementById('timeFilter').value;
+            currentFilter = filter;
+            
+            if (currentTab === 'workers') {
+                const workerRankings = calculateWorkerRankings(filter);
+                renderWorkers(workerRankings);
+            } else {
+                const productRankings = calculateProductRankings(filter);
+                renderProducts(productRankings);
+            }
+        }
 
         // ================== TAB SWITCHING ==================
         function switchRanking(type) {
+            currentTab = type;
             const wView = document.getElementById('workerView');
             const pView = document.getElementById('productView');
             const wBtn = document.getElementById('btnWorkers');
             const pBtn = document.getElementById('btnProducts');
+            
             if (type === 'workers') {
                 wView.classList.remove('view-hidden');
                 pView.classList.add('view-hidden');
@@ -187,6 +400,9 @@
                 wBtn.classList.remove('text-gray-500', 'dark:text-gray-400');
                 pBtn.classList.remove('tab-active');
                 pBtn.classList.add('text-gray-500', 'dark:text-gray-400');
+                // Refresh workers data
+                const workerRankings = calculateWorkerRankings(currentFilter);
+                renderWorkers(workerRankings);
             } else {
                 pView.classList.remove('view-hidden');
                 wView.classList.add('view-hidden');
@@ -194,38 +410,28 @@
                 pBtn.classList.remove('text-gray-500', 'dark:text-gray-400');
                 wBtn.classList.remove('tab-active');
                 wBtn.classList.add('text-gray-500', 'dark:text-gray-400');
+                // Refresh products data
+                const productRankings = calculateProductRankings(currentFilter);
+                renderProducts(productRankings);
             }
         }
 
-        // Optional: time filter handler (placeholder)
+        // ================== INITIALIZE ==================
         document.getElementById('timeFilter').addEventListener('change', function(e) {
-            console.log('Time filter changed to:', e.target.value);
+            updateAllData();
         });
 
+        // Load initial data
+        setTimeout(() => {
+            updateAllData();
+        }, 100);
+
+        // Listen for storage changes (if data updates elsewhere)
         window.addEventListener('storage', (e) => {
-            if (e.key === 'mizana_settings') {
-                // Reload settings and reapply (if needed)
-                // loadAppSettings(); if defined
-                if (typeof renderProducts === 'function') renderProducts();
+            if (e.key === 'transactions' || e.key === 'products' || e.key === 'staff') {
+                updateAllData();
             }
         });
     </script>
-    <script>
-  (function() {
-    const toggleBtn = document.getElementById('theme-toggle') || document.getElementById('darkModeToggle');
-    if (!toggleBtn) return;
-
-    // Load saved preference
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.body.classList.add('dark');
-    }
-
-    // Toggle function
-    toggleBtn.addEventListener('click', () => {
-      document.body.classList.toggle('dark');
-      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-    });
-  })();
-</script>
 </body>
 </html>

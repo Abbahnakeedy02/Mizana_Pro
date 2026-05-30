@@ -167,11 +167,8 @@
     </div>
 
     <script>
-        // ================== DARK MODE ==================
-        const prefersDark = localStorage.getItem('darkMode') === 'true';
-        if (prefersDark) document.body.classList.add('dark');
-
-        // ================== SAFE DATE PARSER ==================
+        
+            // ================== SAFE DATE PARSER ==================
         function parseDateSafely(dateStr) {
             if (!dateStr) return new Date(0);
             let d = new Date(dateStr);
