@@ -662,13 +662,7 @@
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        // ================== Dark mode ==================
-        (function() {
-            const prefersDark = localStorage.getItem('darkMode') === 'true';
-            if (prefersDark) document.body.classList.add('dark');
-        })();
+        }      
 
         // ================== Data Services ==================
         const settingsService = (function() {
